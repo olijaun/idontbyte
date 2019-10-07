@@ -1,6 +1,7 @@
 ---
-layout: post
+layout: test_post
 title:  "Idempotence"
+categories: [architecture, design, webservice]
 ---
 
 Idempotence is one of most essential properties of a web service. No matter whether it is REST, [SOAP](https://en.wikipedia.org/w/index.php?title=SOAP&oldid=917411406), [gRPC](https://grpc.io/) or any other remoting protocol. However in my experience this aspect is often overlooked or ignored. I am aware that there are many articles about this topic already but often these articles are not tackling the topic in all his aspects. So here is my attempt.
@@ -83,8 +84,8 @@ deactivate A
 
 Also the last image is implying that there is an synchronous communication going on which is not true. The bits and bytes are travelling from A to B and eventually B might create a response that could get lost on its way back to A. In a programming language one may get the illusion that a request is synchronous.
 
-```
-curl -v http://idontbyte.jaun.org
+```bash
+$ curl -v http://idontbyte.jaun.org
 * Rebuilt URL to: http://idontbyte.jaun.org/
 *   Trying 185.199.111.153...
 * TCP_NODELAY set
@@ -100,8 +101,8 @@ We get the impression that [curl](https://curl.haxx.se/) fetches the page at htt
 
 What happens if the page is responding very slowly? I'm using [slowwly](http://slowwly.robertomurray.co.uk) here to simulate a slow page. The parameter `--max-time 1` tells curl to wait one second for response:
 
-```
-curl --max-time 1 -v http://slowwly.robertomurray.co.uk/delay/3000/url/http://www.google.ch
+```bash
+$ curl --max-time 1 -v http://slowwly.robertomurray.co.uk/delay/3000/url/http://www.google.ch
 *   Trying 34.241.172.109...
 * TCP_NODELAY set
 * Connected to slowwly.robertomurray.co.uk (34.241.172.109) port 80 (#0)
@@ -350,36 +351,33 @@ Also it must be assured that the business entity (the account deposit in the exa
 ```java
 @Path("/accounts/{id}")
 public class AccountResource {
-    // ...
     @POST
     @Produces({MediaType.TEXT_PLAIN})
     @Path("/deposits")
     @Transactional
     public Response addDeposit(Deposit deposit, @HeaderParam("x-request-id") String requestId) {
-        
+
         try {
             String newDepositId = UUID.randomUUID().toString();
             transactionTemplate.execute(new TransactionCallbackWithoutResult() {
                 @Override
                 protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
-                    saveIdempotenceId(requestId);
-                    saveDeposit(newDepositId, deposit);
+                    saveRequestId(requestId);
+                    saveNewDeposit(newDepositId, deposit);
                 }
             });
             return Response.ok(newDepositId).build();
-    
-        } catch (RuntimeException e) {
+        } catch (Exception e) {
             if (requestIdExists(requestId)) {
-                Response.status(Response.Status.CONFLICT).build();
+                return Response.status(Response.Status.CONFLICT).build();
             }
             throw e;
         }
     }
-     // ...
 }
 ```
 
-In the example application ([TODO: see here for full source](http://github.com)) there are two inserts into the database performed: First the `requestId` is saved. Second the business entity itself (the deposit) is saved (the example uses a relational database and SQL for this). 
+In the example application ([see here for full source](https://github.com/olijaun/playground/tree/master/idemotence-example)) there are two inserts into the database performed: First the `requestId` is saved. Second the business entity itself (the deposit) is saved (the example uses a relational database and SQL for this). 
 
 Both inserts are preformed inside the same local transaction (here using Spring programmatic transactions). This is very important: If one would insert the `requestId` in a separate transaction and the second insert for the deposit entry would fail afterwards then the request would appear to be processed on repeated calls.
 
