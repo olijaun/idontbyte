@@ -21,3 +21,4 @@ excerpt_separator: <!--more-->
 
 sass:
     style: :compressed
+destination: docs
