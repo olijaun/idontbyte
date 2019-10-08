@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A layout example that shows off a blog page with a list of posts.">
+    <title>Blog &ndash; Layout Examples &ndash; Pure</title>
+    <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.1/build/pure-min.css" integrity="sha384-"
+          crossorigin="anonymous">
+
+    <!--[if lte IE 8]>
+    <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.1/build/grids-responsive-old-ie-min.css">
+    <![endif]-->
+    <!--[if gt IE 8]><!-->
+    <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.1/build/grids-responsive-min.css">
+    <!--<![endif]-->
+
+
+    <!--[if lte IE 8]>
+    <link rel="stylesheet" href="css/layouts/blog-old-ie.css">
+    <![endif]-->
+    <!--[if gt IE 8]><!-->
+    <link rel="stylesheet" href="/assets/blog.css">
+    <!--<![endif]-->
+
+
+<!--    <link rel="stylesheet"-->
+<!--          href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/styles/default.min.css">-->
+<!--    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/highlight.min.js"></script>-->
+<!--    <script>hljs.initHighlightingOnLoad();</script>-->
+
+    <script>
+        (function (i, s, o, g, r, a, m) {
+            i['GoogleAnalyticsObject'] = r;
+            i[r] = i[r] || function () {
+                (i[r].q = i[r].q || []).push(arguments)
+            }, i[r].l = 1 * new Date();
+            a = s.createElement(o),
+                m = s.getElementsByTagName(o)[0];
+            a.async = 1;
+            a.src = g;
+            m.parentNode.insertBefore(a, m)
+        })(window, document, 'script', 'https://www.google-analytics.com/analytics.js', 'ga');
+
+        ga('create', 'UA-50141806-2', 'auto');
+        ga('send', 'pageview');
+
+    </script>
+
+</head>
+
+
+<body>
+
+<div id="layout" class="pure-g">
+
+    <div class="sidebar pure-u-1 pure-u-md-1-4">
+    <div class="header">
+        <h1 class="brand-title">I don't byte</h1>
+        <h2 class="brand-tagline">Oliver Jaun's Blog On Software Development</h2>
+
+        <nav class="nav">
+            <ul class="nav-list">
+                <li class="nav-item">
+                    <a class="pure-button" href="/">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="pure-button" href="/about.html">About</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+    <div class="content pure-u-1 pure-u-md-3-4">
+        <!-- A single blog post -->
+        <section class="post">
+
+            <header class="post-header">
+
+                <h2 class="post-title">Idempotence</h2>
+
+                <p class="post-meta">
+                    By <a class="post-anchor" href="/about">Oliver Jaun</a>,
+                    
+                    <time datetime='2019-09-23'>Sep 23, 2019</time>
+                    
+
+                    
+
+
+                    
+                    <a class="post-category post-category-architecture" href="#">architecture</a>
+                    
+                    <a class="post-category post-category-design" href="#">design</a>
+                    
+                    <a class="post-category post-category-webservice" href="#">webservice</a>
+                    
+                </p>
+            </header>
+
+            <div class="post-description">
+                <p>
+                    <p>Idempotence is one of most essential properties of a web service. No matter whether it is REST, <a href="https://en.wikipedia.org/w/index.php?title=SOAP&amp;oldid=917411406">SOAP</a>, <a href="https://grpc.io/">gRPC</a> or any other remoting protocol. However in my experience this aspect is often overlooked or ignored. I am aware that there are many articles about this topic already but often these articles are not tackling the topic in all his aspects. So here is my attempt.</p>
+
+<h2 id="definition">Definition</h2>
+<p>An elevator button is usually idempotent. It lights up when it is pressed for the first time. If it is pressed again, it won’t change. If it is pressed a hundred times, the elevator will still arrive once.</p>
+
+<p>In mathematics idempotence is defined as follows:</p>
+
+<blockquote>
+  <p>Idempotence is the property of certain operations in mathematics […] whereby they can be applied multiple times without changing the result beyond the initial application. (<a href="https://en.wikipedia.org/w/index.php?title=Idempotence&amp;oldid=917052170">Wikipedia</a>)</p>
+</blockquote>
+
+<p>Here’s the definition for “imperative programming’:</p>
+
+<blockquote>
+  <p>in imperative programming, a subroutine with side effects is idempotent if the system state remains the same after one or several calls, in other words if the function from the system state space to itself associated to the subroutine is idempotent in the mathematical sense given in the definition;  (<a href="https://en.wikipedia.org/w/index.php?title=Idempotence&amp;oldid=917052170">Wikipedia</a>)</p>
+</blockquote>
+
+<p>Here is an example in Java:</p>
+
+<figure class="highlight"><pre><code class="language-java" data-lang="java"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">MyString</span> <span class="o">{</span>
+    
+    <span class="kd">private</span> <span class="nc">String</span> <span class="n">string</span><span class="o">;</span>
+    
+    <span class="kd">public</span> <span class="nf">MyString</span><span class="o">(</span><span class="nc">String</span> <span class="n">s</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">string</span> <span class="o">=</span> <span class="n">s</span><span class="o">;</span>
+    <span class="o">}</span>
+    
+    <span class="cm">/** idempotent method */</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">toUpperCase</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">string</span> <span class="o">=</span> <span class="n">string</span><span class="o">.</span><span class="na">toUpperCase</span><span class="o">();</span>
+    <span class="o">}</span>
+    
+    <span class="cm">/** NON idempotent method */</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">append</span><span class="o">(</span><span class="nc">String</span> <span class="n">s</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">string</span> <span class="o">=</span> <span class="n">string</span> <span class="o">+</span> <span class="n">s</span><span class="o">;</span>
+    <span class="o">}</span>
+    
+    <span class="kd">public</span> <span class="nc">String</span> <span class="nf">getValue</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">string</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span></code></pre></figure>
+
+<p><code class="highlighter-rouge">toUpperCase()</code> is idempotent: No matter whether <code class="highlighter-rouge">toUpperCase()</code> is called once or a hundred times: the result will be the same. <code class="highlighter-rouge">append()</code> is not idempotent because each time it is being called the string gets longer.</p>
+
+<h2 id="distributed-systems">Distributed Systems</h2>
+
+<p>In the context of a single process (as shown above) idempotence is not so exiting… However with distributed systems that are communicating over a network things are getting more interesting.</p>
+
+<p>Firstly it’s important to understand why distributed systems are difficult and why there is an important difference between calling a method in the same process and calling a service that lives on a remote system via a network. Years ago Peter Deutsch enumerated eight <a href="https://en.wikipedia.org/w/index.php?title=Fallacies_of_distributed_computing&amp;oldid=916589690">Fallacies of Distributed Computing</a>. The first one was “The network is reliable”.</p>
+
+<p>So what can probably go wrong when A and B communicate via a network? A lot. Let’s look at a sequence diagram of two services communication. Service A sends a Request to Service B.</p>
+
+<p><img src="/uml/82772a5d39efcda8f22cb754debffc92.svg" alt="PlantUML SVG diagram" class="plantuml" /></p>
+
+<p>If Service A and Service B communicate over a network then this picture is obviously a simplification. So let’s draw the network as well:</p>
+
+<p><img src="/uml/55426ebb2e5ba887edcd9fa3cf5e517b.svg" alt="PlantUML SVG diagram" class="plantuml" /></p>
+
+<p>Also the last image is implying that there is an synchronous communication going on which is not true. The bits and bytes are travelling from A to B and eventually B might create a response that could get lost on its way back to A. In a programming language one may get the illusion that a request is synchronous.</p>
+
+<figure class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>curl <span class="nt">-v</span> https://idontbyte.jaun.org
+<span class="k">*</span> Rebuilt URL to: https://idontbyte.jaun.org/
+<span class="k">*</span>   Trying 185.199.111.153...
+<span class="k">*</span> TCP_NODELAY <span class="nb">set</span>
+<span class="k">*</span> Connected to idontbyte.jaun.org <span class="o">(</span>185.199.111.153<span class="o">)</span> port 443 <span class="o">(</span><span class="c">#0)</span>
+<span class="k">*</span> ALPN, offering h2
+<span class="k">*</span> ALPN, offering http/1.1
+<span class="k">*</span> successfully <span class="nb">set </span>certificate verify locations:
+<span class="k">*</span>   CAfile: /etc/ssl/certs/ca-certificates.crt
+  CApath: /etc/ssl/certs</code></pre></figure>
+
+<p>We get the impression that <a href="https://curl.haxx.se/">curl</a> fetches the page at http://idontbyte.jaun.org synchronously. curl terminates as soon as it receives the response. Under the hood what this call does is send some bytes to the server and then wait to see if it ever gets some bytes as a response. The correlation of request and response is done by the underlying protocol.</p>
+
+<p>What happens if the page is responding very slowly? I’m using <a href="http://slowwly.robertomurray.co.uk">slowwly</a> here to simulate a slow page. The parameter <code class="highlighter-rouge">--max-time 1</code> tells curl to wait one second for response:</p>
+
+<figure class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>curl <span class="nt">--max-time</span> 1 <span class="nt">-v</span> http://slowwly.robertomurray.co.uk/delay/3000/url/http://www.google.ch
+<span class="k">*</span>   Trying 34.241.172.109...
+<span class="k">*</span> TCP_NODELAY <span class="nb">set</span>
+<span class="k">*</span> Connected to slowwly.robertomurray.co.uk <span class="o">(</span>34.241.172.109<span class="o">)</span> port 80 <span class="o">(</span><span class="c">#0)</span>
+<span class="o">&gt;</span> GET /delay/3000/url/http://www.google.ch HTTP/1.1
+<span class="o">&gt;</span> Host: slowwly.robertomurray.co.uk
+<span class="o">&gt;</span> User-Agent: curl/7.58.0
+<span class="o">&gt;</span> Accept: <span class="k">*</span>/<span class="k">*</span>
+<span class="o">&gt;</span> 
+<span class="k">*</span> Operation timed out after 1000 milliseconds with 0 bytes received
+<span class="k">*</span> stopped the pause stream!
+<span class="k">*</span> Closing connection 0
+curl: <span class="o">(</span>28<span class="o">)</span> Operation timed out after 1000 milliseconds with 0 bytes received</code></pre></figure>
+
+<p>curl returns a timeout error in this case. Now look at what can go wrong when A communicates with B:</p>
+
+<p><img src="/uml/8bfa7a51546bdf3008facaeb0ce1c6eb.svg" alt="PlantUML SVG diagram" class="plantuml" /></p>
+
+<ol>
+  <li>A cannot connect to the network</li>
+  <li>A can connect to the network but B cannot be reached</li>
+  <li>B cannot connect to the network when it tries to send the response</li>
+  <li>B can send the response to the network but the response never reaches A</li>
+  <li>A is waiting for the response and after a while decides to not wait any longer (timeout)</li>
+</ol>
+
+<p>What can be done if such a problem occurs? One simple solution is to just retry the call. So if the network cannot be reached we just retry to send the data again. If B is not responding then we just send the request again, maybe we get a response. Assume the following service that deposits 42 Swiss Francs (CHF) to account “1”.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ curl http://localhost:8080/accounts/1/deposits/f55cf209-a8bd-4b3e-b909-0ee8fc9dfd98
+{"amount":42,"currency":"CHF"}
+</code></pre></div></div>
+
+<p>If this POST request fails for some reason (e.g. a timeout) and it is sent again then the money might be deposited twice. That is because in case of a timeout or other failures the client does not know if the recipient actually deposited the money or not. Maybe just the response was lost:</p>
+
+<p><img src="/uml/d3508e07a4333c35637c6b7cb11d1cac.svg" alt="PlantUML SVG diagram" class="plantuml" /></p>
+
+<p>Of course it might also be the case that the transaction was not successfully processed. If the client does not retry the call then the money will never be added. So what can be done?</p>
+
+<h2 id="how-to-design-idempotent-services">How to design idempotent services</h2>
+
+<p>As mentioned before: For most services idempotence is important. It allows to retry calls that have failed without fearing any unwanted effects. It’s amazing how many service I’ve seen in my daily work that are not idempotent. I had to make ugly workarounds in order to get things work due to services that were not idempotent. For example I implemented a service that hat to send (physical) letters to customers using a printing service. The printing service was not idempotent. So it was possible that a customer would receive the same letter twice or even more times. In order to avoid this problem I tried to work around it by checking whether there was a print job for the given customer already in the printing queue. This is not perfect because one millisecond after checking for a print job there might be created one by another process. So it would still be possible that a customer receives to letters.</p>
+
+<p>Fortunately I see that awareness is increasing. Architectural patterns like <a href="https://microservices.io/patterns/data/saga.html">SAGA</a>s are only possible if the services involved are idempotent. The increasing popularity of microservices are making it necessary to think more about properly designing services with idempotence in mind.</p>
+
+<h3 id="a-note-on-http-and-rest">A note on HTTP and REST</h3>
+
+<p>The following examples are RESTfull services (at least sort of… please don’t call the REST police). However the general principles can also be applied to any other remoting protocol like <a href="https://en.wikipedia.org/w/index.php?title=SOAP&amp;oldid=917411406">SOAP</a>, <a href="https://grpc.io/">gRPC</a> etc.</p>
+
+<p>One thing to note is the fact that HTTP defines which verbs (GET, POST, PUT, …) are supposed to be idempotent and which are not. This is defined in <a href="https://tools.ietf.org/html/rfc7231">rfc7231</a>. When implementing a webservice this could of course be ignored but it would violate the principles of HTTP/REST. A REST service is not simply idempotent by using any of the “idempotent” verbs. It is idempotent because it was implemented this way.</p>
+
+<ul>
+  <li>Idempotent: GET, HEAD, PUT, DELETE, OPTIONS and TRACE</li>
+  <li>Non-Idempotent: POST, PATCH (see <a href="https://tools.ietf.org/html/rfc5789">rfc5789</a>)</li>
+</ul>
+
+<p>An interesting comment in respect to idempotence and HTTP can be found <a href="https://stackoverflow.com/questions/45016234/what-is-idempotency-in-http-methods#targetText=A%20request%20method%20is%20considered,safe%20request%20methods%20are%20idempotent">on Stackoverflow</a>.</p>
+
+<h3 id="some-services-are-already-idempotent">Some services are already idempotent</h3>
+
+<p>Firstly it’s important to note that read-only services are already idempotent.</p>
+
+<figure class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>curl http://localhost:8080/accounts/1/deposits/16dfa005-d882-4133-baf2-dfddbe7d61f0
+<span class="o">{</span>
+  <span class="s2">"amount"</span> : 42,
+  <span class="s2">"currency"</span> : <span class="s2">"CHF"</span>
+<span class="o">}</span></code></pre></figure>
+
+<p>This reads the deposit with ID “123”. It does not change the deposit. Whether this is called once or twice does not matter. It will return the same deposit. Of course: if someone else modifies the deposit after the first call then the second call will return the modified deposit. But that is nothing to be solved by making the service idempotent. The point is that <em>the same client</em> is not changing the result by calling the service multiple times. In order to know whether someone changed the data it would be necessary to use versioning and/or locking techniques. That’s a completely different story.</p>
+
+<p>Assuming that existing deposits can be modified with a PUT request (the amount is changed to 120 CHF):</p>
+
+<figure class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>curl <span class="nt">-X</span> PUT <span class="nt">-H</span> <span class="s2">"Content-Type: application/json"</span> http://localhost:8080/accounts/1/deposits/c0f3279a-6774-4b2e-a98e-9c7e1bedbe32 <span class="nt">-d</span> <span class="s1">'
+{               
+  "amount" : 120,
+  "currency" : "CHF"
+}'</span></code></pre></figure>
+
+<p>Here we are changing the deposit “123” to have an amount of 120. This can be called multiple times without having a different outcome. So this conforms to HTTP which mandates PUT requests to be idempotent.</p>
+
+<h3 id="adding-an-id-to-the-body">Adding an id to the body</h3>
+
+<p>The problem with idemotence is mainly with services that create something. In the example a new deposits should be created for a given account. With HTTP this is usually done with POST:</p>
+
+<figure class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>curl-X POST http://localhost:8080/accounts/1/deposits <span class="nt">-H</span> <span class="s2">"Content-Type: application/json"</span> <span class="nt">-d</span> <span class="s1">'
+{ 
+  "amount": 42, 
+  "currency": "CHF" 
+}'</span>
+aa564b53-6992-4577-8eae-c63bcafcb0a4</code></pre></figure>
+
+<p>The creates a new deposit and returns the generated ID (aa564b53-6992-4577-8eae-c63bcafcb0a4). How can it be avoided that multiple invocations of this request won’t create multiple resources? Here is a possible solution:</p>
+
+<figure class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>curl-X POST http://localhost:8080/accounts/1/deposits <span class="nt">-H</span> <span class="s2">"Content-Type: application/json"</span> <span class="nt">-d</span> <span class="s1">'
+{ 
+  "id": 7
+  "amount": 42, 
+  "currency": "CHF" 
+}'</span></code></pre></figure>
+
+<p>So instead of letting the service generate an ID for the deposit the caller specifies the deposit ID (7) to be used in the body of the HTTP message. Now the service is able to distinguish whether the caller tries to repeatedly create the same deposit or if he tries to create a new deposit.</p>
+
+<p>One thing to consider is also what should happen if a client creates a POST with the same ID but a different deposit (different amount or also currency). The simplest approach is to just have a generic response saying something like “a deposit with this id has already been created” and ignore the request.</p>
+
+<p>An issue with this solution is that the client decides which is the deposit ID to be used. Usually the service would like to choose the ID.</p>
+
+<h3 id="using-put-instead-of-post-for-resource-creation">Using PUT instead of POST for resource creation</h3>
+
+<p>By using PUT instead of POST it is possible to specify the deposit’s ID in the URL:</p>
+
+<figure class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>curl <span class="nt">-X</span> PUT <span class="nt">-H</span> <span class="s2">"Content-Type: application/json"</span> http://localhost:8080/accounts/1/deposits/123 <span class="nt">-d</span> <span class="s1">'
+{               
+  "amount" : 42,
+  "currency" : "CHF"
+}'</span></code></pre></figure>
+
+<p>Similar to the POST example above the service is now able to decide whether he as already processed the transaction or not. Like with the POST example it is again the client who chooses the deposit ID (here 123).</p>
+
+<p>If the deposit with id “123” does not exist yet, then it is created. Subsequent calls would update the existing deposit. This might work in some cases. However it would be more “RESTfull” to use POST for resource creation and PUT for updates.</p>
+
+<h3 id="providing-an-id-generator-service">Providing an ID generator service</h3>
+
+<p>As mentioned before  a service would usually like to control the IDs used for its business objects. Also, if the client chooses the deposit ID then he could accidentally pick an ID that has been used by another client before. The service would then ignore this request and the client would never know.</p>
+
+<p>In order to avoid this, clients could use UUIDs (<a href="https://en.wikipedia.org/w/index.php?title=Universally_unique_identifier&amp;oldid=915343615">preferably type 4, which are random</a>). These UUIDs should be unique and there shouldn’t be any collisions. The correct format of the ID should be validated in the service.</p>
+
+<p>If the service must control the ID to be used then an ID generator service can be implemented:</p>
+
+<figure class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>curl-X POST http://localhost:8080/id-generator
+<span class="o">{</span>
+  <span class="s2">"id"</span>: <span class="s2">"145b63ec-1440-46b5-b29f-6ae3c948dce4"</span>
+<span class="o">}</span></code></pre></figure>
+
+<p>This id generator just generates a new ID each time it is called. This ID is then used when creating a deposit using POST. The service must check whether the deposit ID specified has been issued before. If this is true then the deposit will be created (if it does not exist yet).</p>
+
+<p>The disadvantage of this solution is of course that the client has to perform two calls and an additional service (the id generator) has to be implemented.</p>
+
+<h3 id="providing-a-request-id-as-request-metadata">Providing a request id as request metadata</h3>
+
+<p>Currently I think that probably the best solution is to use a dedicated request id. In case of HTTP this could be implemented as a HTTP header (according to <a href="https://www.keycdn.com/support/custom-http-headers">this</a> I’m not using an <code class="highlighter-rouge">x-</code> prefix). The request id is passed as a header using <code class="highlighter-rouge">-H "request-id: 123"</code> in curl.</p>
+
+<figure class="highlight"><pre><code class="language-bash" data-lang="bash">curl <span class="nt">-X</span> POST http://localhost:8080/accounts/1/deposits <span class="nt">-H</span> <span class="s2">"request-id: 123"</span> <span class="nt">-H</span> <span class="s2">"Content-Type: application/json"</span>  <span class="nt">-d</span> <span class="s1">'
+{
+  "amount": 42, 
+  "currency": "CHF" 
+}'</span>
+ca6cf316-6061-47a2-8948-6864d5b84839</code></pre></figure>
+
+<p>Note that the service creates a new deposit id and returns it (ca6cf316-6061-47a2-8948-6864d5b84839). The service has to remember all <code class="highlighter-rouge">request-id</code>s that he successfully processed. If he repeatedly receives the same <code class="highlighter-rouge">request-id</code> he indicates this with a special return code. For example you could use a 4xx return code like 442. According to the <a href="https://tools.ietf.org/html/rfc2616#section-6.1.1">rfc2616</a> it is fine to define custom status codes:</p>
+
+<blockquote>
+  <p>HTTP status codes are extensible</p>
+</blockquote>
+
+<p>This solution has the advantage that the service can control the generation of the deposit ID and no additional service is required in order to generate an ID. Of course it is again up to the client to use a proper <code class="highlighter-rouge">request-id</code> that will not clash with IDs used by others. A good choice would be a UUID Type 4 and service side validation of the <code class="highlighter-rouge">request-id</code>.</p>
+
+<p>This also allows to properly use POST instead of PUT for creation of resources.</p>
+
+<h2 id="service-implementation-considerations">Service implementation considerations</h2>
+
+<p>When implementing and idempotent service special care has to be taken when persisting a <code class="highlighter-rouge">request-id</code>. One has to make sure the ID is “unique” (e.g. using UNIQUE constraints in a database). Violations of this constraint must be handled according to the approach taken.</p>
+
+<p>Also it must be assured that the business entity (the account deposit in the example) is saved in the same local transaction as the <code class="highlighter-rouge">request-id</code>:</p>
+
+<figure class="highlight"><pre><code class="language-java" data-lang="java"><span class="nd">@Path</span><span class="o">(</span><span class="s">"/accounts/{id}"</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">AccountResource</span> <span class="o">{</span>
+    <span class="nd">@POST</span>
+    <span class="nd">@Produces</span><span class="o">({</span><span class="nc">MediaType</span><span class="o">.</span><span class="na">TEXT_PLAIN</span><span class="o">})</span>
+    <span class="nd">@Path</span><span class="o">(</span><span class="s">"/deposits"</span><span class="o">)</span>
+    <span class="nd">@Transactional</span>
+    <span class="kd">public</span> <span class="nc">Response</span> <span class="nf">addDeposit</span><span class="o">(</span><span class="nc">Deposit</span> <span class="n">deposit</span><span class="o">,</span> <span class="nd">@HeaderParam</span><span class="o">(</span><span class="s">"request-id"</span><span class="o">)</span> <span class="nc">String</span> <span class="n">requestId</span><span class="o">)</span> <span class="o">{</span>
+
+        <span class="k">try</span> <span class="o">{</span>
+
+            <span class="nc">String</span> <span class="n">newDepositId</span> <span class="o">=</span> <span class="no">UUID</span><span class="o">.</span><span class="na">randomUUID</span><span class="o">().</span><span class="na">toString</span><span class="o">();</span>
+
+            <span class="n">transactionTemplate</span><span class="o">.</span><span class="na">execute</span><span class="o">((</span><span class="n">status</span><span class="o">)</span> <span class="o">-&gt;</span> <span class="o">{</span>
+
+                <span class="n">saveRequestId</span><span class="o">(</span><span class="n">requestId</span><span class="o">);</span>
+                <span class="n">saveNewDeposit</span><span class="o">(</span><span class="n">newDepositId</span><span class="o">,</span> <span class="n">deposit</span><span class="o">);</span>
+                <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+
+            <span class="o">});</span>
+
+            <span class="k">return</span> <span class="nc">Response</span><span class="o">.</span><span class="na">ok</span><span class="o">(</span><span class="n">newDepositId</span><span class="o">).</span><span class="na">build</span><span class="o">();</span>
+        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="nc">Exception</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">requestIdExists</span><span class="o">(</span><span class="n">requestId</span><span class="o">))</span> <span class="o">{</span>
+                <span class="c1">// custom status indicating that request id has been used before</span>
+                <span class="k">return</span> <span class="nc">Response</span><span class="o">.</span><span class="na">status</span><span class="o">(</span><span class="mi">442</span><span class="o">).</span><span class="na">build</span><span class="o">();</span>
+            <span class="o">}</span>
+            <span class="k">throw</span> <span class="n">e</span><span class="o">;</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+<span class="o">}</span></code></pre></figure>
+
+<p>In the example application (<a href="https://github.com/olijaun/playground/tree/master/idemotence-example">see here for full source</a>) there are two inserts into the database performed: First the <code class="highlighter-rouge">requestId</code> is saved. Second the business entity itself (the deposit) is saved (the example uses a relational database and SQL for this).</p>
+
+<p>Both inserts are preformed inside the same local transaction (here using Spring programmatic transactions). This is very important: If one would insert the <code class="highlighter-rouge">requestId</code> in a separate transaction and the second insert for the deposit entry would fail afterwards then the request would appear to be processed on repeated calls. Actually you could also first insert the deposit and afterwards insert the request id.</p>
+
+<p>This implementation might return a server error (HTTP status code 500) if it is called twice almost in parallel with the same request id. The first client will succeed locking the request table. The second will fail and enter the catch block. Assuming the transaction that locked the table did not commit yet, then <code class="highlighter-rouge">requestIdExists()</code> would return false and the exception will be thrown. It is fine to return a 5xx HTTP status code (this is implicitly done here by rethrowing the error). A client would usually retry calls that returned a technical error. So the next attempt would usually return a 422.</p>
+
+<p>This also shows that it is not possible to implement <code class="highlighter-rouge">saveIdempotenceId()</code> using two distinct databases. I mentioned that a local transaction must be used. This is only possible “inside” the same database. It would be possible to use two different database and distributed transactions (<a href="https://de.wikipedia.org/wiki/X/Open_XA">XA Transactions</a>). The problem with distributed transactions is that they are… well… distributed. So they are actually suffering kind of the same problem we are trying to solve. If you don’t believe me then look-up “xa heuristic exceptions” (<a href="https://www.atomikos.com/Documentation/HeuristicExceptions">look here for example</a>).</p>
+
+<h2 id="summary">Summary</h2>
+
+<p>Idempotence is important. You will not be able to achieve eventual consistency if services are not idempotent. Services that are read-only are already idempotent. Special care has to be taken in case of services that create new resources. My recommendation is to use a request id in the header of HTTP POST messages. Make sure to store the request id in the same local transaction as the business entity. Update requests are often also already idempotent.</p>
+
+
+                </p>
+            </div>
+        </section>
+        
+
+<div class="footer">
+    <div class="pure-menu pure-menu-horizontal">
+        &copy; 2019 - Oliver Jaun
+        <ul>
+            <li class="pure-menu-item"><a href="/privacy_policy.html" class="pure-menu-link">Privacy Policy</a></li>
+            <li class="pure-menu-item"><a href="/disclosure_statement.html" class="pure-menu-link">Disclosure Statement</a></li>
+        </ul>
+    </div>
+</div>
+    </div>
+
+
+
+</div>
+
+
+</body>
+
+</html>

@@ -295,7 +295,11 @@ curl -X POST http://localhost:8080/accounts/1/deposits -H "request-id: 123" -H "
 ca6cf316-6061-47a2-8948-6864d5b84839
 {% endhighlight %}
 
-Note that the service creates a new deposit id and returns it (ca6cf316-6061-47a2-8948-6864d5b84839). The service has to remember all `request-id`s that he successfully processed. If he repeatedly receives the same `request-id` he indicates this with a special return code. This solution has the advantage that the service can control the generation of the deposit ID and no additional service is required in order to generate an ID. Of course it is again up to the client to use a proper `request-id` that will not clash with IDs used by others. A good choice would be a UUID Type 4 and service side validation of the `request-id`.
+Note that the service creates a new deposit id and returns it (ca6cf316-6061-47a2-8948-6864d5b84839). The service has to remember all `request-id`s that he successfully processed. If he repeatedly receives the same `request-id` he indicates this with a special return code. For example you could use a 4xx return code like 442. According to the [rfc2616](https://tools.ietf.org/html/rfc2616#section-6.1.1) it is fine to define custom status codes: 
+
+> HTTP status codes are extensible
+
+This solution has the advantage that the service can control the generation of the deposit ID and no additional service is required in order to generate an ID. Of course it is again up to the client to use a proper `request-id` that will not clash with IDs used by others. A good choice would be a UUID Type 4 and service side validation of the `request-id`.
 
 This also allows to properly use POST instead of PUT for creation of resources.
 
@@ -323,13 +327,14 @@ public class AccountResource {
                 saveRequestId(requestId);
                 saveNewDeposit(newDepositId, deposit);
                 return null;
-                
+
             });
 
             return Response.ok(newDepositId).build();
         } catch (Exception e) {
             if (requestIdExists(requestId)) {
-                return Response.status(Response.Status.CONFLICT).build();
+                // custom status indicating that request id has been used before
+                return Response.status(442).build();
             }
             throw e;
         }
@@ -339,11 +344,15 @@ public class AccountResource {
 
 In the example application ([see here for full source](https://github.com/olijaun/playground/tree/master/idemotence-example)) there are two inserts into the database performed: First the `requestId` is saved. Second the business entity itself (the deposit) is saved (the example uses a relational database and SQL for this). 
 
-Both inserts are preformed inside the same local transaction (here using Spring programmatic transactions). This is very important: If one would insert the `requestId` in a separate transaction and the second insert for the deposit entry would fail afterwards then the request would appear to be processed on repeated calls.
+Both inserts are preformed inside the same local transaction (here using Spring programmatic transactions). This is very important: If one would insert the `requestId` in a separate transaction and the second insert for the deposit entry would fail afterwards then the request would appear to be processed on repeated calls. Actually you could also first insert the deposit and afterwards insert the request id. 
 
-This also shows that it is not possible to implement `saveIdempotenceId()` using a remote web service or using a different database. I mentioned that local transaction must be used. This is only possible "inside" the same database. It would be possible to use two different database and distributed transactions ([XA Transactions](https://de.wikipedia.org/wiki/X/Open_XA)). The problem with distributed transactions is that they are... well... distributed. So they are actually suffering kind of the same problem we are trying to solve. If you don't believe me then look-up "xa heuristic exceptions" ([look here for example](https://www.atomikos.com/Documentation/HeuristicExceptions)).
+This implementation might return a server error (HTTP status code 500) if it is called twice almost in parallel with the same request id. The first client will succeed locking the request table. The second will fail and enter the catch block. Assuming the transaction that locked the table did not commit yet, then `requestIdExists()` would return false and the exception will be thrown. It is fine to return a 5xx HTTP status code (this is implicitly done here by rethrowing the error). A client would usually retry calls that returned a technical error. So the next attempt would usually return a 422.
 
+This also shows that it is not possible to implement `saveIdempotenceId()` using two distinct databases. I mentioned that a local transaction must be used. This is only possible "inside" the same database. It would be possible to use two different database and distributed transactions ([XA Transactions](https://de.wikipedia.org/wiki/X/Open_XA)). The problem with distributed transactions is that they are... well... distributed. So they are actually suffering kind of the same problem we are trying to solve. If you don't believe me then look-up "xa heuristic exceptions" ([look here for example](https://www.atomikos.com/Documentation/HeuristicExceptions)).
 
+## Summary
+
+Idempotence is important. You will not be able to achieve eventual consistency if services are not idempotent. Services that are read-only are already idempotent. Special care has to be taken in case of services that create new resources. My recommendation is to use a request id in the header of HTTP POST messages. Make sure to store the request id in the same local transaction as the business entity. Update requests are often also already idempotent.
 
 
 
