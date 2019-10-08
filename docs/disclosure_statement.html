@@ -53,23 +53,43 @@
 
 <body>
 
-<div class="blog-masthead-with-margin">
-  <div class="container">
-    <nav class="nav blog-nav">
-        <a class="nav-link" href="/">Home</a>
-        <a class="nav-link" href="/posts.html">All Posts</a>
-        <a class="nav-link active" href="/about.html">About</a>
-    </nav>
+<div id="layout" class="pure-g">
+
+    <div class="sidebar pure-u-1 pure-u-md-1-4">
+    <div class="header">
+        <h1 class="brand-title">I don't byte</h1>
+        <h2 class="brand-tagline">Oliver Jaun's Blog On Software Development</h2>
+
+        <nav class="nav">
+            <ul class="nav-list">
+                <li class="nav-item">
+                    <a class="pure-button" href="/">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="pure-button" href="/about.html">About</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
 </div>
 
+    <div class="content pure-u-1 pure-u-md-3-4">
 
+        <div>
 
-</div>
+            <div class="posts">
+                <!-- A single blog post -->
+                <section class="post">
 
-<div class="container">
-  <h1 id="disclosure-statement">Disclosure Statement</h1>
+                    <header class="post-header">
 
-<p>(last update: 2016-02-02)</p>
+                        <h2 class="post-title">Disclosure Statement</h2>
+
+                    </header>
+
+                    <div class="post-description">
+                        <p>
+                            <p>(last update: 2016-02-02)</p>
 
 <p>This blog is a personal website written and edited by me, Oliver Jaun. It contains blog posts of all kinds but mainly about computer science and music. The aim is to provide the reader with some hopefully interesting post, mostly based on my personal experience.</p>
 
@@ -79,29 +99,28 @@
 
 <p>The blog contains a commenting function. I may delete any of these comments without further notice and without any explanation.</p>
 
+                        </p>
+                    </div>
+                </section>
+            </div>
+
+            
+
+<div class="footer">
+    <div class="pure-menu pure-menu-horizontal">
+        &copy; 2019 - Oliver Jaun
+        <ul>
+            <li class="pure-menu-item"><a href="/privacy_policy.html" class="pure-menu-link">Privacy Policy</a></li>
+            <li class="pure-menu-item"><a href="/disclosure_statement.html" class="pure-menu-link">Disclosure Statement</a></li>
+        </ul>
+    </div>
+</div>
+
+        </div>
+    </div>
 </div>
 
 
-
-<footer class="blog-footer">
-    <p>Copyright &copy; 2019 by Oliver Jaun / <a href="/privacy_policy.html">Privacy Policy</a>, <a href="/disclosure_statement.html">Disclosure Statement</a></p>
-    <p>
-        <a href="#">Back to top</a>
-    </p>
-</footer>
-
-
-<!-- Bootstrap core JavaScript
-================================================== -->
-<!-- Placed at the end of the document so the pages load faster -->
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.0.0/jquery.min.js" integrity="sha384-THPy051/pYDQGanwU6poAc/hOdQxjnOEXzbT+OuUAFqNqFjL+4IGLBgCJC3ZOShY" crossorigin="anonymous"></script>
-<script>window.jQuery || document.write('<script src="../../assets/js/vendor/jquery.min.js"><\/script>')</script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.2.0/js/tether.min.js" integrity="sha384-Plbmg8JY28KFelvJVai01l8WyZzrYWG825m+cZ0eDDS1f7d/js6ikvy1+X+guPIB" crossorigin="anonymous"></script>
-<!--script src="../../dist/js/bootstrap.min.js"></script-->
-<!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
-<!--script src="../../assets/js/ie10-viewport-bug-workaround.js"></script-->
-
-
-
 </body>
+
 </html>

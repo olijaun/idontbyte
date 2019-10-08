@@ -32,3 +32,4 @@ gem "tzinfo-data"
 
 gem "jekyll-paginate"
 gem "jekyll-plantuml"
+gem "jekyll-sitemap"

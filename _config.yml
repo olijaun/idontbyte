@@ -13,7 +13,7 @@ permalink: /blog/:year/:month/:title
 markdown: kramdown
 plugins:
   - jekyll-paginate
-  #- jekyll-sitemap
+  - jekyll-sitemap
   - jekyll-plantuml
 paginate: 5
 paginate_path: "/page:num/"

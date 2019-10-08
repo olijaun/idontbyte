@@ -1,11 +1,9 @@
 ---
-layout: default
-title: About
-navid: about
+layout: test_page
+title: Disclosure Statement
+navid: disclosure
 sitemap: false
 ---
-
-# Disclosure Statement
 
 (last update: 2016-02-02)
 
