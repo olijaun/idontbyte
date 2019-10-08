@@ -1,5 +1,5 @@
 ---
-layout: test_post
+layout: test_page
 title: About
 navid: about
 ---

@@ -17,9 +17,13 @@ a:focus {
     text-decoration: underline;
 }
 
-h3 {
-    font-weight: 100;
+blockquote {
+    font-style: italic;
 }
+
+/*h3 {*/
+/*    font-weight: 100;*/
+/*}*/
 
 /* LAYOUT CSS */
 .pure-img-responsive {
@@ -149,6 +153,7 @@ h3 {
 
 .footer {
     padding: 1em 0;
+    font-family: Georgia, "Cambria", serif;
 }
 .footer a {
     color: #ccc;
@@ -158,6 +163,11 @@ h3 {
 .footer .pure-menu a:focus {
     background: none;
 }
+
+/* --------------------------
+ * Footer Module Styles
+ * --------------------------
+*/
 
 @media (min-width: 48em) {
     .content {

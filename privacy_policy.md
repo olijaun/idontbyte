@@ -1,11 +1,9 @@
 ---
-layout: default
-title: About
+layout: test_page
+title: Privacy Policy
 navid: about
 sitemap: false
 ---
-
-# Privacy Policy
 
 (last update: 2017-02-02)
 

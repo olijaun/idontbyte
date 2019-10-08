@@ -18,16 +18,20 @@
                 <h2 class="post-title">{{ page.title }}</h2>
 
                 <p class="post-meta">
-                    {% if page.author %}By <a class="post-anchor" href="{{ page.author_about }}">{{ page.author }}</a>
-                    {% elsif site.author %}By <a class="post-anchor" href="{{ site.author_about }}">{{ site.author }}</a>{% endif %}
-
-
+                    {% if page.author %}By <a class="post-anchor" href="{{ page.author_about }}">{{ page.author
+                    }}</a>
+                    {% elsif site.author %}By <a class="post-anchor" href="{{ site.author_about }}">{{ site.author
+                    }}</a>{% endif %},
                     {% if page.date %}
                     <time datetime='{{ page.date | date: "%Y-%m-%d" }}'>{{ page.date | date: "%b %-d, %Y" }}</time>
                     {% endif %}
 
                     {% if page.last_modified_at %}
-                    (Last modified at <time datetime='{{ page.last_modified_at | date: "%Y-%m-%d" }}'>{{ page.last_modified_at | date: "%b %-d, %Y" }}</time>)
+                    (Last modified at
+                    <time datetime='{{ page.last_modified_at | date: "%Y-%m-%d" }}'>{{ page.last_modified_at | date:
+                        "%b %-d, %Y" }}
+                    </time>
+                    )
                     {% endif %}
 
 
@@ -43,8 +47,14 @@
                 </p>
             </div>
         </section>
+        {% include test_footer.html %}
     </div>
+
+
+
 </div>
+
+
 </body>
 
 </html>
