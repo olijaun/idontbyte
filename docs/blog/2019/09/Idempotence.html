@@ -144,7 +144,7 @@
 
 <p>In the context of a single process (as shown above) idempotence is not so exiting… However with distributed systems that are communicating over a network things are getting more interesting.</p>
 
-<p>Firstly it’s important to understand why distributed computing is difficult and why there is an important difference between calling a method in the same process and calling a service that lives on a remote system via a network. Years ago Peter Deutsch enumerated eight <a href="https://en.wikipedia.org/w/index.php?title=Fallacies_of_distributed_computing&amp;oldid=916589690">Fallacies of Distributed Computing</a>. The first one was “The network is reliable”. There is also a good paper called <a href="http://www.psinaptic.com/link_files/distributed_computing.pdf">A Note on Distributed Computing</a> I can recommend.</p>
+<p>Firstly it’s important to understand why distributed computing is difficult and why there is an important difference between calling a method in the same process and calling a service that lives on a remote system via a network. Years ago Peter Deutsch enumerated eight <a href="https://en.wikipedia.org/w/index.php?title=Fallacies_of_distributed_computing&amp;oldid=916589690">Fallacies of Distributed Computing</a>. The first one was “The network is reliable”. There is also a good paper called <a href="http://www.psinaptic.com/link_files/distributed_computing.pdf">A Note on Distributed Computing</a> I strongly recommend.</p>
 
 <p>So what can probably go wrong when A and B communicate via a network? A lot. Let’s look at a sequence diagram of two services communication. Service A sends a Request to Service B.</p>
 
@@ -382,9 +382,9 @@ ca6cf316-6061-47a2-8948-6864d5b84839</code></pre></figure>
 
 <p>It’s amazing how many service I’ve seen in my daily work that are not idempotent. What can be done if you have to use a non idempotent service?</p>
 
-<p>Let’s look at a concrete case I had to solve. I implemented a user registration service that - among other things - had to print a password lettern (yes, a physical letter… real paper…you know). For printing I had to call a printing service which was not idempotent. So what do I do if I get a technical error or a timeout from this service? Retry? Then the customer might receive two password letters. If a retry then he might get two…</p>
+<p>Let’s look at a concrete case I had to solve. I implemented a user registration service that - among other things - had to print a password lettern (yes, a physical letter… real paper…you know). For printing I had to call a printing service which was not idempotent. So what do I do if I get a technical error or a timeout from this service? Retry? Then the customer might receive two password letters. If I don’t retry he might get no letter at all.</p>
 
-<p>It’s important to note that this problem cannot be solved if the printing service cannot be made idempotent. Period. What I did in this case was to query the printing service for any password letters that have been printed on the same day. If there were any I did not retry. This solution makes it very unlikely that the letter is sent twice and it guarantees that it sent at least once. I haven’t heard of any customer that has received two letters so far but it is obvious that the solution would be more robust and even more simpler if the printing serivce was idempotent.</p>
+<p>It’s important to note that this problem cannot be solved if the printing service cannot be made idempotent. Period. What I did in this case was to query the printing service for any password letters that have been printed on the same day. If there were any I did not retry. This solution makes it very unlikely that the letter is sent twice and it guarantees that it sent at least once. I haven’t heard of any customer that has received two letters so far but it is obvious that the solution would be more robust and even simpler if the printing service was idempotent.</p>
 
 <h2 id="summary">Summary</h2>
 
