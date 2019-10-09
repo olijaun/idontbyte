@@ -2,6 +2,7 @@
 layout: test_post
 title:  "Idempotence"
 categories: [architecture, design, webservice]
+comments: true
 ---
 
 Idempotence is one of most essential properties of a web service. No matter whether it is REST, [SOAP](https://en.wikipedia.org/w/index.php?title=SOAP&oldid=917411406), [gRPC](https://grpc.io/) or any other remoting protocol. However in my experience this aspect is often overlooked or ignored. I am aware that there are many articles about this topic already but often these articles are not tackling the topic in all his aspects. So here is my attempt.
