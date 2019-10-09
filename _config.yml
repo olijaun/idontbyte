@@ -4,7 +4,7 @@ email: oliver@jaun.org
 description: > # this means to ignore newlines until "baseurl:"
   Blog about Java Programming and Software Architecture
 baseurl: "" # the subpath of your site, e.g. /blog/
-url: "http://idontbyte.jaun.org" # the base hostname & protocol for your site
+url: "https://idontbyte.jaun.org" # the base hostname & protocol for your site
 #github_username:  olijaun
 author: Oliver Jaun
 author_about: /about
