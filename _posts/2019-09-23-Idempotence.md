@@ -10,11 +10,7 @@ Idempotence is one of most essential properties of a web service. No matter whet
 ## Definition
 An elevator button is usually idempotent. It lights up when it is pressed for the first time. If it is pressed again, it won't change. If it is pressed a hundred times, the elevator will still arrive once.
 
-In mathematics idempotence is defined as follows:
-
-> Idempotence is the property of certain operations in mathematics [...] whereby they can be applied multiple times without changing the result beyond the initial application. ([Wikipedia](https://en.wikipedia.org/w/index.php?title=Idempotence&oldid=917052170))
-
-Here's the definition for "imperative programming':
+In Wikipedia idempotence is defined as follows in the context of "imperative programming':
 
 > in imperative programming, a subroutine with side effects is idempotent if the system state remains the same after one or several calls, in other words if the function from the system state space to itself associated to the subroutine is idempotent in the mathematical sense given in the definition;  ([Wikipedia](https://en.wikipedia.org/w/index.php?title=Idempotence&oldid=917052170))
 
@@ -54,7 +50,7 @@ public class MyString {
 
 In the context of a single process (as shown above) idempotence is not so exiting... However with distributed systems that are communicating over a network things are getting more interesting.
 
-Firstly it's important to understand why distributed systems are difficult and why there is an important difference between calling a method in the same process and calling a service that lives on a remote system via a network. Years ago Peter Deutsch enumerated eight [Fallacies of Distributed Computing](https://en.wikipedia.org/w/index.php?title=Fallacies_of_distributed_computing&oldid=916589690). The first one was "The network is reliable".
+Firstly it's important to understand why distributed computing is difficult and why there is an important difference between calling a method in the same process and calling a service that lives on a remote system via a network. Years ago Peter Deutsch enumerated eight [Fallacies of Distributed Computing](https://en.wikipedia.org/w/index.php?title=Fallacies_of_distributed_computing&oldid=916589690). The first one was "The network is reliable". There is also a good paper called [A Note on Distributed Computing](http://www.psinaptic.com/link_files/distributed_computing.pdf) I can recommend.
  
  So what can probably go wrong when A and B communicate via a network? A lot. Let's look at a sequence diagram of two services communication. Service A sends a Request to Service B.
 
@@ -126,7 +122,6 @@ curl returns a timeout error in this case. Now look at what can go wrong when A 
 participant "Service A" as A
 participant "Network" as N
 participant "Service B" as B
-autonumber
 A ->x N: Request
 activate N
 N ->x B: Request
@@ -147,10 +142,13 @@ deactivate A
 
 What can be done if such a problem occurs? One simple solution is to just retry the call. So if the network cannot be reached we just retry to send the data again. If B is not responding then we just send the request again, maybe we get a response. Assume the following service that deposits 42 Swiss Francs (CHF) to account "1".
 
-```
-$ curl http://localhost:8080/accounts/1/deposits/f55cf209-a8bd-4b3e-b909-0ee8fc9dfd98
-{"amount":42,"currency":"CHF"}
-```
+{% highlight bash %}
+$ curl -X POST http://localhost:8080/accounts/1/deposits -d '
+{
+  "amount":42,
+  "currency":"CHF"
+}'
+{% endhighlight %}
 
 If this POST request fails for some reason (e.g. a timeout) and it is sent again then the money might be deposited twice. That is because in case of a timeout or other failures the client does not know if the recipient actually deposited the money or not. Maybe just the response was lost:
 
@@ -158,9 +156,9 @@ If this POST request fails for some reason (e.g. a timeout) and it is sent again
 participant "Service A" as A
 participant "Network" as N
 participant "Service B" as B
-A -> N: send 42 CHF
+A -> N: deposit 42 CHF
 activate N
-N -> B: send 42 CHF
+N -> B: deposit 42 CHF
 activate B
 N x<-- B: OK, thanks
 deactivate B
@@ -172,10 +170,6 @@ deactivate A
 Of course it might also be the case that the transaction was not successfully processed. If the client does not retry the call then the money will never be added. So what can be done?
 
 ## How to design idempotent services
-
-As mentioned before: For most services idempotence is important. It allows to retry calls that have failed without fearing any unwanted effects. It's amazing how many service I've seen in my daily work that are not idempotent. I had to make ugly workarounds in order to get things work due to services that were not idempotent. For example I implemented a service that hat to send (physical) letters to customers using a printing service. The printing service was not idempotent. So it was possible that a customer would receive the same letter twice or even more times. In order to avoid this problem I tried to work around it by checking whether there was a print job for the given customer already in the printing queue. This is not perfect because one millisecond after checking for a print job there might be created one by another process. So it would still be possible that a customer receives to letters.
-
-Fortunately I see that awareness is increasing. Architectural patterns like [SAGA](https://microservices.io/patterns/data/saga.html)s are only possible if the services involved are idempotent. The increasing popularity of microservices are making it necessary to think more about properly designing services with idempotence in mind.
 
 ### A note on HTTP and REST
 
@@ -194,7 +188,7 @@ An interesting comment in respect to idempotence and HTTP can be found [on Stack
 Firstly it's important to note that read-only services are already idempotent.
 
 {% highlight bash %}
-$ curl http://localhost:8080/accounts/1/deposits/16dfa005-d882-4133-baf2-dfddbe7d61f0
+$ curl -X GET http://localhost:8080/accounts/1/deposits/16dfa005-d882-4133-baf2-dfddbe7d61f0
 {
   "amount" : 42,
   "currency" : "CHF"
@@ -206,7 +200,8 @@ This reads the deposit with ID "123". It does not change the deposit. Whether th
 Assuming that existing deposits can be modified with a PUT request (the amount is changed to 120 CHF):
 
 {% highlight bash %}
-$ curl -X PUT -H "Content-Type: application/json" http://localhost:8080/accounts/1/deposits/c0f3279a-6774-4b2e-a98e-9c7e1bedbe32 -d '
+$ curl -X PUT http://localhost:8080/accounts/1/deposits/c0f3279a-6774-4b2e-a98e-9c7e1bedbe32 \
+  -H "Content-Type: application/json" -d '
 {               
   "amount" : 120,
   "currency" : "CHF"
@@ -232,7 +227,8 @@ aa564b53-6992-4577-8eae-c63bcafcb0a4
 The creates a new deposit and returns the generated ID (aa564b53-6992-4577-8eae-c63bcafcb0a4). How can it be avoided that multiple invocations of this request won't create multiple resources? Here is a possible solution:
 
 {% highlight bash %}
-$ curl-X POST http://localhost:8080/accounts/1/deposits -H "Content-Type: application/json" -d '
+$ curl-X POST http://localhost:8080/accounts/1/deposits \ 
+  -H "Content-Type: application/json" -d '
 { 
   "id": 7
   "amount": 42, 
@@ -287,7 +283,9 @@ The disadvantage of this solution is of course that the client has to perform tw
 Currently I think that probably the best solution is to use a dedicated request id. In case of HTTP this could be implemented as a HTTP header (according to [this](https://www.keycdn.com/support/custom-http-headers) I'm not using an `x-` prefix). The request id is passed as a header using `-H "request-id: 123"` in curl.
 
 {% highlight bash %}
-curl -X POST http://localhost:8080/accounts/1/deposits -H "request-id: 123" -H "Content-Type: application/json"  -d '
+curl -X POST http://localhost:8080/accounts/1/deposits \
+  -H "request-id: 123" \
+  -H "Content-Type: application/json"  -d '
 {
   "amount": 42, 
   "currency": "CHF" 
@@ -295,19 +293,21 @@ curl -X POST http://localhost:8080/accounts/1/deposits -H "request-id: 123" -H "
 ca6cf316-6061-47a2-8948-6864d5b84839
 {% endhighlight %}
 
-Note that the service creates a new deposit id and returns it (ca6cf316-6061-47a2-8948-6864d5b84839). The service has to remember all `request-id`s that he successfully processed. If he repeatedly receives the same `request-id` he indicates this with a special return code. For example you could use a 4xx return code like 442. According to the [rfc2616](https://tools.ietf.org/html/rfc2616#section-6.1.1) it is fine to define custom status codes: 
+Note that the service creates a new deposit id and returns it (ca6cf316-6061-47a2-8948-6864d5b84839). The service has to remember all `request-id`s that he successfully processed. If the service is called with the same `request-id` again then it indicates this with a special return code. For example you could use a cutstom 4xx return code like 442. According to the [rfc2616](https://tools.ietf.org/html/rfc2616#section-6.1.1) it is fine to define custom status codes: 
 
 > HTTP status codes are extensible
 
-This solution has the advantage that the service can control the generation of the deposit ID and no additional service is required in order to generate an ID. Of course it is again up to the client to use a proper `request-id` that will not clash with IDs used by others. A good choice would be a UUID Type 4 and service side validation of the `request-id`.
+I think that the HTTP status code 409 (CONFLICT) is probably not suitable because it implies that the client can resolve the conflict and resubmit the request which is not the case here. Once a request id is "used", the client will always get the same response over and over again.
 
-This also allows to properly use POST instead of PUT for creation of resources.
+Sidenote: So why not behave "completely idempotent" and just return a 2xx status code? The problem with this solution is that it is often more difficult to implement. If a client sends a request id that has been used before but together with a different request body then what should happen? I think it would be a bad idea to just respond with "OK". So in order for the service to detect this situation it needs to know the original request body in order to assert that the request is the same as the originally submitted one. Also if the POST returns the ID of the newly generated resource (or even a representation of the resource) then the service has to remember it. So by just saying that the request id has been used before you avoid all of these problem. But from the client's standpoint it would be easier because as long as it sends the same request-id with same body it doesn't have to care.
+
+Summarizing: By using a request id the service can control the generation of the deposit ID and no additional service is required in order to generate an ID. Of course it is again up to the client to use a proper `request-id` that will not clash with IDs used by others. A good choice would be a UUID Type 4 and service side validation of the `request-id`. This approach also allows to properly use POST instead of PUT for creation of resources.
 
 ## Service implementation considerations
 
 When implementing and idempotent service special care has to be taken when persisting a `request-id`. One has to make sure the ID is "unique" (e.g. using UNIQUE constraints in a database). Violations of this constraint must be handled according to the approach taken.
 
-Also it must be assured that the business entity (the account deposit in the example) is saved in the same local transaction as the `request-id`:
+Also it must be assured that the business entity (the account deposit in the example) is saved in the same local transaction as the `request-id`. Note that the following code is not meant a   s a good example for software design. I would not implement this all in one class and I'm aware of the `@Transactional` annotation of course.
 
 {% highlight java %}
 @Path("/accounts/{id}")
@@ -315,7 +315,6 @@ public class AccountResource {
     @POST
     @Produces({MediaType.TEXT_PLAIN})
     @Path("/deposits")
-    @Transactional
     public Response addDeposit(Deposit deposit, @HeaderParam("request-id") String requestId) {
 
         try {
@@ -342,13 +341,23 @@ public class AccountResource {
 }
 {% endhighlight %}
 
-In the example application ([see here for full source](https://github.com/olijaun/playground/tree/master/idemotence-example)) there are two inserts into the database performed: First the `requestId` is saved. Second the business entity itself (the deposit) is saved (the example uses a relational database and SQL for this). 
+In the example application ([see here for full source](https://github.com/olijaun/playground/tree/master/idemotence-example)) there are two inserts into the database performed: First the `requestId` is saved by calling `saveRequestId()`. Second the business entity itself (the deposit) is saved by calling `saveNewDeposit()` (the example uses a relational database and SQL for this). 
 
 Both inserts are preformed inside the same local transaction (here using Spring programmatic transactions). This is very important: If one would insert the `requestId` in a separate transaction and the second insert for the deposit entry would fail afterwards then the request would appear to be processed on repeated calls. Actually you could also first insert the deposit and afterwards insert the request id. 
 
-This implementation might return a server error (HTTP status code 500) if it is called twice almost in parallel with the same request id. The first client will succeed locking the request table. The second will fail and enter the catch block. Assuming the transaction that locked the table did not commit yet, then `requestIdExists()` would return false and the exception will be thrown. It is fine to return a 5xx HTTP status code (this is implicitly done here by rethrowing the error). A client would usually retry calls that returned a technical error. So the next attempt would usually return a 422.
+This implementation might return a server error (HTTP status code 500) if it is called twice almost in parallel with the same request id. The first client will succeed locking the request table. The second will fail and enter the catch block. Assuming the transaction that locked the table did not commit yet, then `requestIdExists()` would return false and the exception will be thrown. It is fine to return a 5xx HTTP status code (this is implicitly done here by rethrowing the error). A client would usually retry calls that returned a technical error. So the next attempt would usually return a 442.
 
 This also shows that it is not possible to implement `saveIdempotenceId()` using two distinct databases. I mentioned that a local transaction must be used. This is only possible "inside" the same database. It would be possible to use two different database and distributed transactions ([XA Transactions](https://de.wikipedia.org/wiki/X/Open_XA)). The problem with distributed transactions is that they are... well... distributed. So they are actually suffering kind of the same problem we are trying to solve. If you don't believe me then look-up "xa heuristic exceptions" ([look here for example](https://www.atomikos.com/Documentation/HeuristicExceptions)).
+
+## How to handle non idempotent services
+
+Idempotence allows to retry calls that have failed without fearing any unwanted side effects. It is the base for eventual consistency and architectural patterns like [SAGA](https://microservices.io/patterns/data/saga.html)s.
+
+It's amazing how many service I've seen in my daily work that are not idempotent. What can be done if you have to use a non idempotent service?
+
+Let's look at a concrete case I had to solve. I implemented a user registration service that - among other things - had to print a password lettern (yes, a physical letter... real paper...you know). For printing I had to call a printing service which was not idempotent. So what do I do if I get a technical error or a timeout from this service? Retry? Then the customer might receive two password letters. If a retry then he might get two... 
+ 
+It's important to note that this problem cannot be solved if the printing service cannot be made idempotent. Period. What I did in this case was to query the printing service for any password letters that have been printed on the same day. If there were any I did not retry. This solution makes it very unlikely that the letter is sent twice and it guarantees that it sent at least once. I haven't heard of any customer that has received two letters so far but it is obvious that the solution would be more robust and even more simpler if the printing serivce was idempotent. 
 
 ## Summary
 

@@ -1,0 +1,9 @@
+@startuml
+
+$ curl -X POST http://localhost:8080/accounts/1/deposits -d '
+{
+  "amount":42,
+  "currency":"CHF"
+}'
+
+@enduml
