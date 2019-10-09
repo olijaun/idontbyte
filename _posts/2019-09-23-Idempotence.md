@@ -355,9 +355,9 @@ Idempotence allows to retry calls that have failed without fearing any unwanted 
 
 It's amazing how many service I've seen in my daily work that are not idempotent. What can be done if you have to use a non idempotent service?
 
-Let's look at a concrete case I had to solve. I implemented a user registration service that - among other things - had to print a password lettern (yes, a physical letter... real paper...you know). For printing I had to call a printing service which was not idempotent. So what do I do if I get a technical error or a timeout from this service? Retry? Then the customer might receive two password letters. If a retry then he might get two... 
+Let's look at a concrete case I had to solve. I implemented a user registration service that - among other things - had to print a password lettern (yes, a physical letter... real paper...you know). For printing I had to call a printing service which was not idempotent. So what do I do if I get a technical error or a timeout from this service? Retry? Then the customer might receive two password letters. If I don't retry he might get no letter at all.
  
-It's important to note that this problem cannot be solved if the printing service cannot be made idempotent. Period. What I did in this case was to query the printing service for any password letters that have been printed on the same day. If there were any I did not retry. This solution makes it very unlikely that the letter is sent twice and it guarantees that it sent at least once. I haven't heard of any customer that has received two letters so far but it is obvious that the solution would be more robust and even more simpler if the printing serivce was idempotent. 
+It's important to note that this problem cannot be solved if the printing service cannot be made idempotent. Period. What I did in this case was to query the printing service for any password letters that have been printed on the same day. If there were any I did not retry. This solution makes it very unlikely that the letter is sent twice and it guarantees that it sent at least once. I haven't heard of any customer that has received two letters so far but it is obvious that the solution would be more robust and even simpler if the printing service was idempotent. 
 
 ## Summary
 
