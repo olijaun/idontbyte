@@ -50,7 +50,7 @@ public class MyString {
 
 In the context of a single process (as shown above) idempotence is not so exiting... However with distributed systems that are communicating over a network things are getting more interesting.
 
-Firstly it's important to understand why distributed computing is difficult and why there is an important difference between calling a method in the same process and calling a service that lives on a remote system via a network. Years ago Peter Deutsch enumerated eight [Fallacies of Distributed Computing](https://en.wikipedia.org/w/index.php?title=Fallacies_of_distributed_computing&oldid=916589690). The first one was "The network is reliable". There is also a good paper called [A Note on Distributed Computing](http://www.psinaptic.com/link_files/distributed_computing.pdf) I can recommend.
+Firstly it's important to understand why distributed computing is difficult and why there is an important difference between calling a method in the same process and calling a service that lives on a remote system via a network. Years ago Peter Deutsch enumerated eight [Fallacies of Distributed Computing](https://en.wikipedia.org/w/index.php?title=Fallacies_of_distributed_computing&oldid=916589690). The first one was "The network is reliable". There is also a good paper called [A Note on Distributed Computing](http://www.psinaptic.com/link_files/distributed_computing.pdf) I strongly recommend.
  
  So what can probably go wrong when A and B communicate via a network? A lot. Let's look at a sequence diagram of two services communication. Service A sends a Request to Service B.
 
