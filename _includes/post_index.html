@@ -1,9 +1,10 @@
 <p>
-    {% for post in site.posts %}
 <ol class="list-unstyled">
+    {% for post in site.posts %}
+
     <li><a href="{{ post.url | prepend: site.baseurl }}">{{ post.title }} ({{ post.date | date: "%b %-d, %Y" }})</a>
     </li>
-</ol>
-{% endfor %}
 
+{% endfor %}
+</ol>
 </p>
