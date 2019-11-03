@@ -1,6 +1,6 @@
 ---
 layout: test_post
-title:  "The Problem with Bean Validation"
+title:  "Bean Validation is bad"
 categories: [java, design]
 comments: true
 ---
@@ -126,7 +126,7 @@ So which test would you prefer as a lazy programmer? Of course I'm exaggerating 
 
 Now, after bad-mouthing bean validation let's talk about its virtues.
 
-# How to avoid the problems with bean validation
+# How to "properly" use bean validation
 
 You can find the "final solution" [in my github repository](https://github.com/olijaun/playground/tree/master/beanvalidation-example). Assume the following request to a registration service:
 
