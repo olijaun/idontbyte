@@ -1,0 +1,14 @@
+@startuml
+
+class Person {
+  String firstName
+  String lastName
+}
+class Address {
+  String street
+  String zip
+}
+
+Person "1" *-- "1..*" Address
+
+@enduml

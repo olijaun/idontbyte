@@ -116,7 +116,7 @@ class Test {
     
     ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
     Validator validator = factory.getValidator();
-    Set<ConstraintViolation<AdditionBean>> errors = validator.validate(bean);
+    Set<ConstraintViolation<User>> errors = validator.validate(user);
     assertTrue(errors.size() > 0);
   }
 }

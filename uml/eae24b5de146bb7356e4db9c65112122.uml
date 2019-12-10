@@ -1,0 +1,10 @@
+@startuml
+
+class Person {
+  String firstName
+  String lastName
+  String street
+  String zip
+}
+
+@enduml
