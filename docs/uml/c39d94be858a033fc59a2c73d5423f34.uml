@@ -1,0 +1,10 @@
+@startuml
+
+participant "User" as U
+participant "Account Service" as S
+participant "EventStore" as ES
+
+U -> S: withdraw 50 CHF
+U -> S: poll for command state
+
+@enduml

@@ -1,0 +1,18 @@
+@startuml
+
+participant "User" as U
+participant "Application Service" as AS
+participant "Repository" as R
+participant "Account X" as A
+participant "EventStore" as ES
+
+U -> AS: withdraw
+AS -> R: getAccount(X)
+R -> ES: load event stream for X
+R <-- ES: EventStream: X
+R ->  A: create
+activate A
+R -> A: apply events from EventStream X
+R --> AS: Account: X
+
+@enduml

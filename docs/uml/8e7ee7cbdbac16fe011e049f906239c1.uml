@@ -1,0 +1,15 @@
+@startuml
+
+participant "User" as U
+participant "Application Service" as AS
+participant "Command Handler" as CH
+participant "Account X" as A
+participant "EventStore" as ES
+
+U -> AS: withdraw
+AS -> CH: withdraw
+CH -> A:
+A -> ES: withdraw
+
+
+@enduml

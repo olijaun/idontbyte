@@ -1,0 +1,15 @@
+@startuml
+
+participant "User" as U
+participant "Service" as S
+participant "Command Gateway" as CG
+participant "Account X Actor" as AC
+participant "Account X" as A
+participant "EventStore" as ES
+
+U -> S: withdraw 10 CHF
+S -> ES: store "Withdrawn" Event
+S <-- ES:
+U <-- S:
+
+@enduml

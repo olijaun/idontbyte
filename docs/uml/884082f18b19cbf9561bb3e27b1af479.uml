@@ -1,0 +1,12 @@
+@startuml
+
+participant "User" as U
+participant "Application Service" as AS
+participant "Repository" as R
+participant "Account" as A
+
+U -> AS: withdraw
+AS -> R: getAccount(X)
+R --> AS: Account: X
+
+@enduml

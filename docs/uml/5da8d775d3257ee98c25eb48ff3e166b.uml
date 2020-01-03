@@ -1,0 +1,19 @@
+@startuml
+
+actor "User A" as U1
+participant "Service" as S
+participant "Repository" as R
+
+U1 -> S: withdraw()
+S -> R: getAccount("123")
+create   "Account" as A
+R -> A: create()
+return
+S <-- R: a: Account
+S -> A: withdraw
+return
+S -> R: store(a)
+return
+U1 <-- S:
+
+@enduml
