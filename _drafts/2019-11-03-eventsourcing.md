@@ -219,3 +219,4 @@ end
 
 A more elegant solution might be to use to user Server Sent Events etc. in order to avoid polling.
 
+# Migration to an Event Sourced Application
