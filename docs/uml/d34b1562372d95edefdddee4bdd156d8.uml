@@ -1,0 +1,24 @@
+@startuml
+
+actor "User" as U
+participant "Application Service" as AS
+participant "Command Gateway" as CG
+participant "Account X Actor" as AC
+participant "Account X" as A
+participant "EventStore" as ES
+
+U -> AS: withdraw("X", 42)
+AS -> CG: handle(cmd: WithdrawCommand)
+CG -> AC: send(cmd: WithdrawCommand)
+AC -> ES: load event stream for X
+AC <-- ES: EventStream: X
+AC -> A: apply events from EventStream X
+AC <-- A
+AC -> A: handle(cmd: WithdrawCommand) : List<Events>
+AC <-- A:
+AC -> ES: save(events)
+return
+...
+CG <- AC: send(r: Response)
+
+@enduml

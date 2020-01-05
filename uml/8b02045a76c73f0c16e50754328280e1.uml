@@ -1,0 +1,26 @@
+@startuml
+
+actor "User" as U
+participant "Application Service" as AS
+participant "Command Gateway" as CG
+participant "Account Actor" as AC
+participant "Account" as A
+participant "EventStore" as ES
+
+U -> AS: **1** withdraw("X", 42)
+AS -> CG: **2** handle(cmd: WithdrawCommand)
+CG -> AC: **3** send(cmd: WithdrawCommand)
+alt aggregate not loaded yet
+  AC -> ES: **4** loadEvents("X")
+  AC <-- ES: **5** events: List<Events>
+  AC -> A: **6** apply(events)
+  return
+end
+AC -> A: **7** handle(cmd: WithdrawCommand) : List<Events>
+AC <-- A:
+AC -> ES: **8** save(events)
+return
+...
+CG <- AC: **9** send(r: Response)
+
+@enduml

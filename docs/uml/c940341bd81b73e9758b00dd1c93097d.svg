@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="129px" preserveAspectRatio="none" style="width:869px;height:129px;background:#000000;" version="1.1" viewBox="0 0 869 129" width="869px" zoomAndPan="magnify"><defs/><g><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="862" x="5" y="17.9951">[From /home/oliver/IdeaProjects/idontbyte.jaun.org/uml/c940341bd81b73e9758b00dd1c93097d.uml (line 3) ]</text><line style="stroke: #33FF02; stroke-width: 1.0;" x1="5" x2="867" y1="26.2969" y2="26.2969"/><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="79" x="5" y="44.292">@startuml</text><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="0" x="10" y="60.5889"/><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="131" x="5" y="76.8857">user "User" as U</text><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="0" x="10" y="93.1826"/><text fill="#FF0000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="106" x="10" y="93.1826">Syntax Error?</text><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="0" x="10" y="109.4795"/><text fill="#FFFFFF" font-family="sans-serif" font-size="14" font-style="italic" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="116" x="10" y="109.4795">Did you mean:</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="137" x="5" y="125.7764">user- "User" as U</text><!--
+@startuml
+
+user "User" as U
+participant "Application Service" as AS
+participant "Command Gateway" as CG
+participant "Account X Actor" as AC
+participant "Account X" as A
+participant "EventStore" as ES
+
+U -> AS: withdraw
+AS -> CG: handle(cmd: WithdrawCommand)
+CG -> AC: send(cmd: WithdrawCommand)
+AC -> ES: load event stream for X
+AC <- - ES: EventStream: X
+AC -> A: apply events from EventStream X
+AC <- - A
+AC -> A: handle(cmd: WithdrawCommand) : List<Events>
+AC <- - A:
+AC -> ES: save(events: List<Events>)
+CG <- - AC: send(r: Response)
+AS <- - CG
+U <- AS
+
+@enduml
+
+PlantUML version 1.2017.15(Mon Jul 03 18:45:34 CEST 2017)
+(GPL source distribution)
+Java Runtime: Java(TM) SE Runtime Environment
+JVM: Java HotSpot(TM) 64-Bit Server VM
+Java Version: 1.8.0_191-b12
+Operating System: Linux
+OS Version: 4.15.0-72-generic
+Default Encoding: UTF-8
+Language: en
+Country: US
+--></g></svg>

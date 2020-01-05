@@ -1,0 +1,29 @@
+@startuml
+
+actor "User" as U
+participant "Application Service" as AS
+participant "Repository" as R
+participant "EventStore" as ES
+
+U -> AS: withdraw("X", 42)
+AS -> R: getAccount("X")
+R -> ES: loadEventStream("X")
+R <-- ES: events : List<Events>
+create "Account" as A
+R ->  A: create(events)
+A -> A: apply(events)
+R <-- A
+AS <-- R: a: Account
+AS -> A: a.withdraw(42)
+A -> A: emit MoneyWithdrawnEvent
+AS <-- A
+AS -> R: save(a)
+R -> A: getEmittedEvents()
+R <-- A: emittedEvents: List<Event>
+destroy A
+R -> ES: append(emittedEvents)
+R <-- ES
+AS <-- R
+U <-- AS
+
+@enduml

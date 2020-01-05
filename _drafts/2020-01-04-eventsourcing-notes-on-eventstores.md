@@ -9,7 +9,6 @@ This is the first part in a series about Event Sourcing. In the past year I was 
 
 This post assumes that you know what Event Sourcing is. If not then I recommend that you read [this Document from Greg Young](https://cqrs.files.wordpress.com/2010/11/cqrs_documents.pdf).
 
-
 # What is an Event Store?
 
 In an Event Sources System the events needed to reconstitute the state of the system are stored in an Event Store. 
@@ -197,8 +196,8 @@ However I would definitely consider the direct consumption of Event Sourcing Eve
 
 # Summary
 
-- Whatever Event Store you're using: Make sure it allows you to ensure invariants either with Optimistic Locking or by otherwise ensuring sequential processing of commands per Aggregate.
 - Implementing Event Stores is not trivial. Use an existing implementation if possible.
+- Whatever Event Store you're using: Make sure it allows you to ensure invariants either with Optimistic Locking or by otherwise ensuring sequential processing of commands per Aggregate.
 - I prefer an Event Store per microservice over a central Event Store.
 - Consume Event Sourcing Events only inside the same Bounded Context.
 - Kafka is not suited as an Event Store but might be great for publish events for consumption by other systems or Bounded Contexts

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="161px" preserveAspectRatio="none" style="width:879px;height:161px;background:#000000;" version="1.1" viewBox="0 0 879 161" width="879px" zoomAndPan="magnify"><defs/><g><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="872" x="5" y="17.9951">[From /home/oliver/IdeaProjects/idontbyte.jaun.org/uml/3d6a5a089ebe6e3e790080256e395938.uml (line 23) ]</text><line style="stroke: #33FF02; stroke-width: 1.0;" x1="5" x2="877" y1="26.2969" y2="26.2969"/><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="185" x="5" y="44.292">... (skipping 19 lines) ...</text><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="130" x="5" y="60.5889">AS -&gt; R: save(A)</text><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="210" x="5" y="76.8857">R -&gt; A: getEmittedEvents()</text><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="286" x="5" y="93.1826">R &lt;-- A: emittedEvents: List&lt;Event&gt;</text><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="66" x="5" y="109.4795">delete A</text><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="0" x="10" y="125.7764"/><text fill="#FF0000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="106" x="10" y="125.7764">Syntax Error?</text><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="0" x="10" y="142.0732"/><text fill="#FFFFFF" font-family="sans-serif" font-size="14" font-style="italic" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="116" x="10" y="142.0732">Did you mean:</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="72" x="5" y="158.3701">delete- A</text><!--
+@startuml
+
+actor "User" as U
+participant "Application Service" as AS
+participant "Repository" as R
+participant "EventStore" as ES
+
+U -> AS: withdraw("X", 42)
+AS -> R: getAccount("X")
+R -> ES: load event stream for X
+R <- - ES: events : List<Events>
+create "Account" as A
+R ->  A: create(events)
+A -> A: apply(events)
+R <- - A
+AS <- - R: a: Account
+AS -> A: withdraw(42)
+A -> A: emit MoneyWithdrawnEvent
+AS <- - A
+AS -> R: save(A)
+R -> A: getEmittedEvents()
+R <- - A: emittedEvents: List<Event>
+delete A
+R -> ES: append(emittedEvents)
+R <- - ES
+AS <- - R
+U <- - AS
+
+@enduml
+
+PlantUML version 1.2017.15(Mon Jul 03 18:45:34 CEST 2017)
+(GPL source distribution)
+Java Runtime: Java(TM) SE Runtime Environment
+JVM: Java HotSpot(TM) 64-Bit Server VM
+Java Version: 1.8.0_191-b12
+Operating System: Linux
+OS Version: 4.15.0-72-generic
+Default Encoding: UTF-8
+Language: en
+Country: US
+--></g></svg>

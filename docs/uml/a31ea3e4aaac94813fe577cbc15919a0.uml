@@ -1,0 +1,14 @@
+@startuml
+
+participant "User" as U
+participant "Account Service" as S
+participant "EventStore" as ES
+
+U ->> S: withdraw 50 CHF
+S -> S: check balance
+loop for 1 minute
+  U -> S: poll for command state
+  U <-- S:
+end
+
+@enduml
