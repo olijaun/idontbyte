@@ -5,18 +5,19 @@ categories: [architecture, design, eventsourcing]
 comments: true
 ---
 
-This is the first part in a series about Event Sourcing. In the past year I was involved in the development of a Java application using Event Sourcing. Actually we did it twice using two different approaches. In this post I'd like to share some thoughts about Event Stores.
+This is the first part in a series about Event Sourcing. In the past year I was involved in the development of a Java application using Event Sourcing. Actually we did it twice using different approaches. In this post I'd like to share some thoughts about Event Stores.
 
 This post assumes that you know what Event Sourcing is. If not then I recommend that you read [this Document from Greg Young](https://cqrs.files.wordpress.com/2010/11/cqrs_documents.pdf).
 
-# What is an Event Store?
+## What is an Event Store?
 
-In an Event Sources System the events needed to reconstitute the state of the system are stored in an Event Store. 
+In an Event Sources System events are primarily used to reconstitute the state of the system. These events are stored in an Event Store. 
 
-In an architecture landscape there may be many different types of events and they serve different purposes. Events can be used for communication between different systems and bounded contexts. Although Event Sourcing Events might be used for this the primary purpose of Event Sourcing Events is to reconstitute the system's state.
+It is important to distinguish these events from other types of events that serve other purposes. Martin Fowler writes about different Patterns in his Article [https://martinfowler.com/articles/201701-event-driven.html](What do you mean by “Event-Driven”?). For example he mentions *Event Notification* which is used to notify other systems of a change. Events in event sourcing might also be used for this purpose but it is not their main purpose. 
 
-An Event Store must be capable of storing streams of events. An event stream is just an ordered list of events belonging to an entity (an aggregate in terms of DDD). The events are stored in order they are emitted.
+An Event Store must be capable of storing streams of events. An event stream is just an ordered list of events belonging to an aggregate (in terms of DDD). The events are stored in order they are emitted.
 
+{% figure caption:"Streams in an Event Store" %}
 {% graphviz  %}
 digraph G {
     rankdir="LR";
@@ -52,12 +53,13 @@ digraph G {
     }
 }
 {% endgraphviz %}
+{% endfigure %}
 
-An example of an aggregate might be a "Person". There may be multiple Persons A, B, C. For each of these Persons there is a separate stream. The streams might be called person-A, person-B, etc. The order of the events inside a stream is very important because the events are replayed in order.
+An example of an aggregate might be a "Person". There may be multiple Persons *A*, *B*, *C*. For each of these Persons there is a separate stream. The streams might be called *person-A*, *person-B*, *person-C*. The order of the events inside a stream is very important because otherwise there could occur illegal state transitions when replaying.
 
-An Event Store also must provide a way to read events. At least it should be possible to read events by stream/aggregate. In most cases however it should also be able to read events by type.
+An Event Store also must provide a way to read events. At least it should be possible to read events by stream/aggregate. In most cases however an Event Store should also be able to read events by type.
 
-In my opinion an Event Store does not necessarily have to support subscriptions etc. which is a higher level requirement. Subscriptions can be built on top of the reading facility.
+When we talk about minimal requirement for an Event Store then I would say that subscriptions/notifications are not a requirement. Subscriptions can be built on top of the reading facility.
 
 # Optimistic Locking
 
@@ -71,23 +73,26 @@ public interface IEventStore
 }
 ```
 
-The naming implies Domain Driven Design (DDD). However it is not necessary to use DDD but it somehow fits very well. Instead of calling it `aggregateId` it could be called `eventStreamId` or similar. Also note that this interface only provides `GetEventsForAggregate` because Greg Young's implementation publishes events after persisting them. His implementation is very basic so don't bother about the details here.
+The naming implies Domain Driven Design (DDD) although it is not necessary to use DDD for Event Sourcing but it somehow fits very well. Instead of calling it `aggregateId` it could also be called `eventStreamId` or similar. Also note that this interface only provides `GetEventsForAggregate` because Greg Young's implementation publishes events after persisting them. His implementation is very basic so don't bother about the details here.
 
-However for me the most notable thing is the `expectedVersion`. Greg Young explains in his [his paper](https://cqrs.files.wordpress.com/2010/11/cqrs_documents.pdf), that this is used for optimistic locking. So when saving your aggregate (or stream) you specify the version you expect to be in the Event Store when appending your new version. If someone else has modified the aggregate in the meantime then the Event Store will throw an optimistic locking exception. This mechanism is important in order to ensure business rules or invariants.
+However for me the most notable thing is the `expectedVersion`. Greg Young explains in his [his paper](https://cqrs.files.wordpress.com/2010/11/cqrs_documents.pdf), that this is used for optimistic locking. So when saving an aggregate (or stream) the `expectedVersion` indicates the version of the latest event in the given stream expected when appending the new event. If the aggregate has been modified in the meantime then the Event Store will throw a `ConcurrencyException`. This mechanism is important in order to ensure business rules.
 
-Imagine a bank account. It must only possible to withdraw money from the account if there is enough money. If there are 42 swiss francs on the account and two people try to withdraw these 42 francs at almost the same time then only one must succeed. 
+Imagine a bank account: If there is a balance of 42 CHF and two people try to withdraw these 42 CHF at almost the same time then only one must succeed.
 
-I had some discussions with co-workers who argued that message driven systems should be designed "more tolerant". Imagine a reservation system that might overbook seats (book a seat twice for example). There might be a process that sends a cancellation to the customer in the (hopefully) seldom case that this happens. This is of course possible and in some cases this might be the best way but it does not change the fact that sometimes you have "hard" business rules. In DDD this is one of the motivations to put such a logic inside an aggregate.
+Some people argue that message driven systems should be designed "more tolerant". Imagine a reservation system that might overbook seats (book a seat twice for example). There might be a process that sends a cancellation to the customer in the (hopefully) seldom case that this happens. This is of course possible and in some cases this might be the best way but it does not change the fact that sometimes you have "hard" business rules. In DDD this is one of the reasons to put such "hard" business rule inside an aggregate.
 
 ## Whats wrong with Optimistic Locking?
 
-The problem is that the Event Store will always check the version when using a Design as shown above. Depending on how the optimistic locking is implemented this can be a performance issue. But apart from that it can be very inconvenient for the users of our system. Imagine again the Bank Account Aggregate: On withdrawal we have to check that there is enough money. This makes sense. But what about depositing money? Does it matter in which order deposits are made? Probably not. So why bother the user with a `ConcurrencyException` or something similar?
+Optimistic Locking might be a performance issue. But apart from that it can be very inconvenient for the users of the system. Imagine again the *Bank Account Aggregate*: On withdrawal we have to check that there is enough money. This makes sense. But what about depositing money? Does it matter in which order deposits are made? Probably not. So why bother the user with a `ConcurrencyException` or something similar?
 
-It would be simple to support for example `-1` as a value to the `expectedVersion` which would tell the Event Store that it should not check the version (this is actually the way it is implemented in [Greg Young's example](https://cqrs.files.wordpress.com/2010/11/cqrs_documents.pdf)). But then how does the repository know in which case the version matters and in which case not? The Repository would need business knowledge.
+It would be simple to support for example `-1` as a value to the `expectedVersion` which would tell the Event Store that it should not check the version (this is actually the way it is implemented in [Greg Young's example](https://cqrs.files.wordpress.com/2010/11/cqrs_documents.pdf)). But then how does the repository know in which case the version matters and in which case not? The Repository implementation would need to have business knowledge.
 
-A solution proposed in the [IDDD book](https://www.goodreads.com/book/show/15756865-implementing-domain-driven-design) is that the aggregate is reloaded in case of a `ConcurrencyException` and the command is applied again. The `ConcurrencyException` is not propagated to the user. On the second attempt there might be again a `ConcurrencyException` (although probably unlikely in the real world). So this can be repeated until the operation either succeeds or fails with an actual business exception.
+A solution proposed in the [IDDD Book](https://www.goodreads.com/book/show/15756865-implementing-domain-driven-design) is that the aggregate is reloaded in case of a `ConcurrencyException` and the command is applied again. The `ConcurrencyException` is not propagated to the user. On the second attempt there might be again a `ConcurrencyException` (although probably unlikely in the real world). So this can be repeated until the operation either succeeds or fails with an actual business exception.
 
-However this also means that if you want to avoid for example overriding certain attributes by a user just shortly after another user has modified it, then this has to be implemented explicitly. But this is fine because then it is an actual business rule. An example would be the modification of an email address by two users for the same person more or less concurrently which makes probably no sense. But this is a business rule and not a technical issue to be handled by the infrastructure and should be implemented in the aggregate.
+The problem that Optimistic Locking solves is technical. For business people there is always just one instance of a given aggregate (account-123, person-A, etc.). However for technical reasons there might be multiple writers due to concurrent invocations of operation on the same aggregate and probably due to deployment on multiple nodes.
+
+All other motivations for optimistic locking are actually business requirements. For example the business people might like to avoid that a Person's name can be overwritten by a user shortly after is has been changed by another user. Optimistic Locking could be used to solve this. It would be more adequate to implement this as a business rule instead of "abusing" a technical solution for this purpose. 
+
 
 ## An alternative with actors
 

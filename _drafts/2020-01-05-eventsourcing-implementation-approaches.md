@@ -5,13 +5,13 @@ categories: [architecture, design, eventsourcing]
 comments: true
 ---
 
-This is the third part in a series about Event Sourcing. In the past year I was involved in the development of a Java application using Event Sourcing. Actually we did it twice using two different approaches. In this post I'd like to share some thoughts about the two different approaches we tried.
+This is the third part in a series about Event Sourcing. In the past year I was involved in the development of a Java application using Event Sourcing. Actually we did it twice using different approaches. In this post I'd like to share some thoughts about the design of these approaches.
 
 This post assumes that you know what Event Sourcing is. If not then I recommend that you read [this Document from Greg Young](https://cqrs.files.wordpress.com/2010/11/cqrs_documents.pdf).
 
 # Introduction
 
-There is not just   one way to implement an Event Sourced application. Event Sourced applications can be very different. They can range from Banking to Source Code Management (like Git or Subversion). Different domains have different requirements.
+There is not just one way to implement an Event Sourced application. Event Sourced applications can be very different. They can range from Banking to Source Code Management (like Git or Subversion). Different domains have different requirements.
 
 Also Event Sourcing is often mentioned along with Domain Driven Design which is not really a requirement but it fits very well and I for myself have always implemented Event Sourcing in the context of DDD applications.
 
@@ -108,15 +108,18 @@ participant "Account" as A
 participant "EventStore" as ES
 
 U -> AS: **1** withdraw("X", 42)
-AS -> CG: **2** handle(cmd: WithdrawCommand)
-CG -> AC: **3** send(cmd: WithdrawCommand)
+AS -> CG: **2** handle(cmd: WithdrawCmd)
+CG -> AC: **3** send(cmd: WithdrawCmd)
 alt aggregate not loaded yet
   AC -> ES: **4.1** loadEvents("X")
   AC <-- ES: events: List<Events>
+  create A
+  AC -> A: create()
+  return
   AC -> A: **4.2** apply(events)
   return
 end
-AC -> A: **5** handle(cmd: WithdrawCommand) : List<Events>
+AC -> A: **5** handle(cmd: WithdrawCmd) : List<Events>
 AC <-- A:
 AC -> ES: **6** save(events)
 return
