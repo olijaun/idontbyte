@@ -1,6 +1,6 @@
 ---
 layout: test_post
-title:  "Event Sourcing - Notes on EventStores"
+title:  "Event Sourcing - Notes on Event Stores"
 categories: [architecture, design, eventsourcing]
 comments: true
 ---

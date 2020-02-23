@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A layout example that shows off a blog page with a list of posts.">
+    <title>Event Sourcing - Notes on Event Stores</title>
+    <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.1/build/pure-min.css" integrity="sha384-"
+          crossorigin="anonymous">
+
+    <!--[if lte IE 8]>
+    <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.1/build/grids-responsive-old-ie-min.css">
+    <![endif]-->
+    <!--[if gt IE 8]><!-->
+    <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.1/build/grids-responsive-min.css">
+    <!--<![endif]-->
+
+
+    <!--[if lte IE 8]>
+    <link rel="stylesheet" href="css/layouts/blog-old-ie.css">
+    <![endif]-->
+    <!--[if gt IE 8]><!-->
+    <link rel="stylesheet" href="/assets/blog.css">
+    <!--<![endif]-->
+
+
+<!--    <link rel="stylesheet"-->
+<!--          href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/styles/default.min.css">-->
+<!--    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/highlight.min.js"></script>-->
+<!--    <script>hljs.initHighlightingOnLoad();</script>-->
+
+    <script>
+        (function (i, s, o, g, r, a, m) {
+            i['GoogleAnalyticsObject'] = r;
+            i[r] = i[r] || function () {
+                (i[r].q = i[r].q || []).push(arguments)
+            }, i[r].l = 1 * new Date();
+            a = s.createElement(o),
+                m = s.getElementsByTagName(o)[0];
+            a.async = 1;
+            a.src = g;
+            m.parentNode.insertBefore(a, m)
+        })(window, document, 'script', 'https://www.google-analytics.com/analytics.js', 'ga');
+
+        ga('create', 'UA-50141806-2', 'auto');
+        ga('send', 'pageview');
+
+    </script>
+
+</head>
+
+
+<body>
+
+<div id="layout" class="pure-g">
+
+    <div class="sidebar pure-u-1 pure-u-md-1-4">
+    <div class="header">
+        <h1 class="brand-title">I don't byte</h1>
+        <h2 class="brand-tagline">Oliver Jaun's Blog On Software Development</h2>
+
+        <nav class="nav">
+            <ul class="nav-list">
+                <li class="nav-item">
+                    <a class="pure-button" href="/">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="pure-button" href="/about.html">About</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+    <div class="content pure-u-1 pure-u-md-3-4">
+        <!-- A single blog post -->
+        <section class="post">
+
+            <header class="post-header">
+
+                <h2 class="post-title">Event Sourcing - Notes on Event Stores</h2>
+
+                <p class="post-meta">
+                    By <a class="post-anchor" href="/about">Oliver Jaun</a>,
+                    
+                    <time datetime='2020-02-23'>Feb 23, 2020</time>
+                    
+
+                    
+
+
+                    
+                    <a class="post-category post-category-architecture" href="#">architecture</a>
+                    
+                    <a class="post-category post-category-design" href="#">design</a>
+                    
+                    <a class="post-category post-category-eventsourcing" href="#">eventsourcing</a>
+                    
+                </p>
+            </header>
+
+            <div class="post-description">
+                <p>
+                    <p>This is the first part in a series about Event Sourcing. In the past year I was involved in the development of a Java application using Event Sourcing. Actually we did it twice using different approaches. In this post I’d like to share some thoughts about Event Stores.</p>
+
+<p>This post assumes that you know what Event Sourcing is. If not then I recommend that you read <a href="https://cqrs.files.wordpress.com/2010/11/cqrs_documents.pdf">this Document from Greg Young</a>.</p>
+
+<h2 id="what-is-an-event-store">What is an Event Store?</h2>
+
+<p>Martin Fowler writes about different Event-Driven Patterns in <a href="https://martinfowler.com/articles/201701-event-driven.html?">this article</a>. For example he mentions <em>Event Notification</em> which is used to notify other systems of a change. Events in event sourcing might also be used for this purpose but it is not their main purpose.</p>
+
+<p>In an Event Sources System events are primarily used <strong>to reconstitute the state of the system</strong>. These events are stored in an Event Store.</p>
+
+<p>An Event Store must be capable of storing streams of events. An event stream is just an ordered list of events belonging to an aggregate (in terms of DDD). The events are stored in order they are emitted.</p>
+
+<figure>
+<div class="diagrams graphviz"><svg width="724pt" height="259pt" viewBox="0.00 0.00 724.00 259.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 255)">
+<title>G</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-255 720,-255 720,4 -4,4" />
+<g id="clust1" class="cluster">
+<title>cluster_0</title>
+<polygon fill="none" stroke="#d3d3d3" points="8,-170 8,-243 708,-243 708,-170 8,-170" />
+<text text-anchor="middle" x="60" y="-231" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#000000">Stream for person&#45;A</text>
+</g>
+<g id="clust2" class="cluster">
+<title>cluster_1</title>
+<polygon fill="none" stroke="#d3d3d3" points="8,-89 8,-162 348,-162 348,-89 8,-89" />
+<text text-anchor="middle" x="60" y="-150" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#000000">Stream for person&#45;B</text>
+</g>
+<g id="clust3" class="cluster">
+<title>cluster_2</title>
+<polygon fill="none" stroke="#d3d3d3" points="8,-8 8,-81 528,-81 528,-8 8,-8" />
+<text text-anchor="middle" x="60.5" y="-69" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#000000">Stream for person&#45;C</text>
+</g>
+<!-- event31 -->
+<g id="node1" class="node">
+<title>event31</title>
+<polygon fill="none" stroke="#000000" points="16,-17 16,-53 160,-53 160,-17 16,-17" />
+<text text-anchor="middle" x="88" y="-38" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#000000">Event #1</text>
+<text text-anchor="middle" x="88" y="-27" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#000000">Created</text>
+</g>
+<!-- event32 -->
+<g id="node2" class="node">
+<title>event32</title>
+<polygon fill="none" stroke="#000000" points="196,-17 196,-53 340,-53 340,-17 196,-17" />
+<text text-anchor="middle" x="268" y="-38" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#000000">Event #2</text>
+<text text-anchor="middle" x="268" y="-27" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#000000">NameChanged</text>
+</g>
+<!-- event31&#45;&gt;event32 -->
+<g id="edge5" class="edge">
+<title>event31&#45;&gt;event32</title>
+<path fill="none" stroke="#000000" d="M160.1757,-35C168.5199,-35 177.0771,-35 185.5445,-35" />
+<polygon fill="#000000" stroke="#000000" points="185.8081,-38.5001 195.8081,-35 185.808,-31.5001 185.8081,-38.5001" />
+</g>
+<!-- event33 -->
+<g id="node3" class="node">
+<title>event33</title>
+<polygon fill="none" stroke="#000000" points="376,-17 376,-53 520,-53 520,-17 376,-17" />
+<text text-anchor="middle" x="448" y="-38" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#000000">Event #3</text>
+<text text-anchor="middle" x="448" y="-27" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#000000">Moved</text>
+</g>
+<!-- event32&#45;&gt;event33 -->
+<g id="edge6" class="edge">
+<title>event32&#45;&gt;event33</title>
+<path fill="none" stroke="#000000" d="M340.1757,-35C348.5199,-35 357.0771,-35 365.5445,-35" />
+<polygon fill="#000000" stroke="#000000" points="365.8081,-38.5001 375.8081,-35 365.808,-31.5001 365.8081,-38.5001" />
+</g>
+<!-- event21 -->
+<g id="node4" class="node">
+<title>event21</title>
+<polygon fill="none" stroke="#000000" points="16,-98 16,-134 160,-134 160,-98 16,-98" />
+<text text-anchor="middle" x="88" y="-119" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#000000">Event #1</text>
+<text text-anchor="middle" x="88" y="-108" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#000000">Created</text>
+</g>
+<!-- event22 -->
+<g id="node5" class="node">
+<title>event22</title>
+<polygon fill="none" stroke="#000000" points="196,-98 196,-134 340,-134 340,-98 196,-98" />
+<text text-anchor="middle" x="268" y="-119" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#000000">Event #2</text>
+<text text-anchor="middle" x="268" y="-108" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#000000">JobChanged</text>
+</g>
+<!-- event21&#45;&gt;event22 -->
+<g id="edge4" class="edge">
+<title>event21&#45;&gt;event22</title>
+<path fill="none" stroke="#000000" d="M160.1757,-116C168.5199,-116 177.0771,-116 185.5445,-116" />
+<polygon fill="#000000" stroke="#000000" points="185.8081,-119.5001 195.8081,-116 185.808,-112.5001 185.8081,-119.5001" />
+</g>
+<!-- event11 -->
+<g id="node6" class="node">
+<title>event11</title>
+<polygon fill="none" stroke="#000000" points="16,-179 16,-215 160,-215 160,-179 16,-179" />
+<text text-anchor="middle" x="88" y="-200" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#000000">Event #1</text>
+<text text-anchor="middle" x="88" y="-189" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#000000">Created</text>
+</g>
+<!-- event12 -->
+<g id="node7" class="node">
+<title>event12</title>
+<polygon fill="none" stroke="#000000" points="196,-179 196,-215 340,-215 340,-179 196,-179" />
+<text text-anchor="middle" x="268" y="-200" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#000000">Event #2</text>
+<text text-anchor="middle" x="268" y="-189" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#000000">EmailAddressChanged</text>
+</g>
+<!-- event11&#45;&gt;event12 -->
+<g id="edge1" class="edge">
+<title>event11&#45;&gt;event12</title>
+<path fill="none" stroke="#000000" d="M160.1757,-197C168.5199,-197 177.0771,-197 185.5445,-197" />
+<polygon fill="#000000" stroke="#000000" points="185.8081,-200.5001 195.8081,-197 185.808,-193.5001 185.8081,-200.5001" />
+</g>
+<!-- event13 -->
+<g id="node8" class="node">
+<title>event13</title>
+<polygon fill="none" stroke="#000000" points="376,-179 376,-215 520,-215 520,-179 376,-179" />
+<text text-anchor="middle" x="448" y="-200" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#000000">Event #3</text>
+<text text-anchor="middle" x="448" y="-189" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#000000">NameChanged</text>
+</g>
+<!-- event12&#45;&gt;event13 -->
+<g id="edge2" class="edge">
+<title>event12&#45;&gt;event13</title>
+<path fill="none" stroke="#000000" d="M340.1757,-197C348.5199,-197 357.0771,-197 365.5445,-197" />
+<polygon fill="#000000" stroke="#000000" points="365.8081,-200.5001 375.8081,-197 365.808,-193.5001 365.8081,-200.5001" />
+</g>
+<!-- event14 -->
+<g id="node9" class="node">
+<title>event14</title>
+<polygon fill="none" stroke="#000000" points="556,-179 556,-215 700,-215 700,-179 556,-179" />
+<text text-anchor="middle" x="628" y="-200" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#000000">Event #4</text>
+<text text-anchor="middle" x="628" y="-189" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#000000">Died</text>
+</g>
+<!-- event13&#45;&gt;event14 -->
+<g id="edge3" class="edge">
+<title>event13&#45;&gt;event14</title>
+<path fill="none" stroke="#000000" d="M520.1757,-197C528.5199,-197 537.0771,-197 545.5445,-197" />
+<polygon fill="#000000" stroke="#000000" points="545.8081,-200.5001 555.8081,-197 545.808,-193.5001 545.8081,-200.5001" />
+</g>
+</g>
+</svg>
+</div>
+  <figcaption>Streams in an Event Store</figcaption>
+</figure>
+
+<p>An example of an aggregate might be a “Person”. There may be multiple Persons <em>A</em>, <em>B</em>, <em>C</em>. For each of these Persons there is a separate stream. The streams might be called <em>person-A</em>, <em>person-B</em>, <em>person-C</em>. The order of the events inside a stream is very important because otherwise there could occur illegal state transitions when replaying.</p>
+
+<p>An Event Store also must provide a way to read events. At least it should be possible to read events by stream/aggregate. In most cases however an Event Store should also be able to read events by type.</p>
+
+<p>When we talk about minimal requirement for an Event Store then I would say that subscriptions/notifications are not a requirement. Subscriptions can be built on top of the reading facility.</p>
+
+<h1 id="optimistic-locking">Optimistic Locking</h1>
+
+<p>Vaughn Vernon’s <a href="https://www.goodreads.com/book/show/15756865-implementing-domain-driven-design">IDDD book</a> and <a href="https://cqrs.files.wordpress.com/2010/11/cqrs_documents.pdf">Greg Young’s papers on CQRS</a> both show a similar interface for an Event Store. Here’s Greg Young’s Version (taken from his <a href="https://github.com/gregoryyoung/m-r/blob/master/SimpleCQRS/EventStore.cs">example project</a>):</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">interface</span> <span class="nc">IEventStore</span>
+<span class="p">{</span>
+    <span class="k">void</span> <span class="nf">SaveEvents</span><span class="p">(</span><span class="n">Guid</span> <span class="n">aggregateId</span><span class="p">,</span> <span class="n">IEnumerable</span><span class="p">&lt;</span><span class="n">Event</span><span class="p">&gt;</span> <span class="n">events</span><span class="p">,</span> <span class="kt">int</span> <span class="n">expectedVersion</span><span class="p">);</span>
+    <span class="n">List</span><span class="p">&lt;</span><span class="n">Event</span><span class="p">&gt;</span> <span class="nf">GetEventsForAggregate</span><span class="p">(</span><span class="n">Guid</span> <span class="n">aggregateId</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p><code class="highlighter-rouge">aggregateId</code> implies Domain Driven Design (DDD) although it is not necessary to use DDD for Event Sourcing but it somehow fits very well. Instead of calling it <code class="highlighter-rouge">aggregateId</code> it could also be called <code class="highlighter-rouge">eventStreamId</code> or similar. Also note that this interface only provides <code class="highlighter-rouge">GetEventsForAggregate</code> because Greg Young’s implementation publishes events after persisting them. His implementation is very basic so don’t bother about the details here.</p>
+
+<p>However for me the most notable thing is the <code class="highlighter-rouge">expectedVersion</code>. Greg Young explains in his <a href="https://cqrs.files.wordpress.com/2010/11/cqrs_documents.pdf">his paper</a>, that this is used for optimistic locking. So when saving an aggregate (or stream) the <code class="highlighter-rouge">expectedVersion</code> indicates the version of the latest event in the given stream expected when appending the new event. If the aggregate has been modified in the meantime then the Event Store will throw a <code class="highlighter-rouge">ConcurrencyException</code>. This mechanism is important in order to enforce business rules.</p>
+
+<p>Imagine a bank account: If there is a balance of 42 CHF and two people try to withdraw these 42 CHF at almost the same time then only one must succeed.</p>
+
+<h2 id="whats-wrong-with-optimistic-locking">Whats wrong with Optimistic Locking?</h2>
+
+<p>Optimistic Locking might be a performance issue. But apart from that it can be very inconvenient for the users of the system. Imagine again the <em>Bank Account Aggregate</em>: On withdrawal we have to check that there is enough money. This makes sense. But what about depositing money? Does it matter in which order deposits are made? Probably not. So why bother the user with a <code class="highlighter-rouge">ConcurrencyException</code> or something similar?</p>
+
+<p>It would be simple to support for example <code class="highlighter-rouge">-1</code> as a value to the <code class="highlighter-rouge">expectedVersion</code> which would tell the Event Store that it should not check the version (this is actually the way it is implemented in <a href="https://cqrs.files.wordpress.com/2010/11/cqrs_documents.pdf">Greg Young’s example</a>). But then how does the repository know in which case the version matters and in which case not? The Repository implementation would need to have business knowledge.</p>
+
+<p>A solution proposed in the <a href="https://www.goodreads.com/book/show/15756865-implementing-domain-driven-design">IDDD Book</a> is that the aggregate is reloaded in case of a <code class="highlighter-rouge">ConcurrencyException</code> and the command is retried. This can be repeated until the command  either succeeds or fails with an actual business exception.</p>
+
+<p>The problem that Optimistic Locking solves is technical. For business people there is always just one instance of a given aggregate (account-123, person-A, etc.). However for technical reasons there might be multiple writers due to concurrent invocations of an operation on the same aggregate.</p>
+
+<p>All other motivations for optimistic locking are actually business requirements. For example the business people might like to avoid that a Person’s name can be overwritten by a user shortly after is has been changed by another user. Although Optimistic Locking could be used to solve this, it would be more adequate to implement this as a business rule instead of “abusing” a technical solution for this purpose.</p>
+
+<h2 id="single-writer">Single Writer</h2>
+
+<p>There is no need for Optimistic Locking if there is always only a single writer per aggregate. This is not simple to achieve if you have a clustered application.</p>
+
+<p>One could use an Actor Frameworks like Akka or Vlingo which provide clustering facilities. I will go into more details on how this could be implemented in a later post. Actors basically have an inbox where they receive messages (e.g. a Command) and process them one by one. If the system is deployed on multiple nodes then sharding is required. Each shard acts as the single source for a set of aggregates. This setup assures that there is always a single writer and no Optimistic Locking is required.</p>
+
+<h1 id="implementation-challenges">Implementation challenges</h1>
+
+<p>Greg young writes:</p>
+
+<blockquote>
+  <p>Although not a trivial exercise to create a production quality Event Storage the overall concepts behind
+  an Event Storage are relatively easy</p>
+</blockquote>
+
+<p>Why shouldn’t this be trivial? Well, one thing is getting the optimistic locking right.</p>
+
+<p>Another challenge I came across was when I tried to implement my own read journal for Akka. A Read Journal is basically the “Read Side” of the EventStore. Usually you want to subscribe to events in an Event Store. This could be a subscription to a specific aggregate, aggregate type or to specific event types.</p>
+
+<p>Events are used to update projections (aka Read Model) among other things. A projection could be rebuilt from scratch each time the system is started. This could get slow if there are many events in the system. Another approach is to have a persistent projection that always stores the event number of the last event that has been processed.</p>
+
+<p>Let’s say the system was shutdown after having read events up to number 2567. When restarting the system the Projection requests all events after 2567. If the projection subscribes to one single stream/aggregate then it is simple because if Optimistic Locking or a Single Writer is used then the aggregate’s sequence numbers are always continuous and do not have gaps. After event number <em>n</em> there must follow event number <em>n + 1</em> inside the same stream/aggregate.</p>
+
+<p>But what happens if the projection listens to a set of event types emitted by different aggregates types? The simplest approach to this is to have an auto increment field/column that provides a unique global sequence number across all streams/aggregates.</p>
+
+<table border="1" cellborder="0" style="rounded" width="100%">
+    <thead>
+       <tr>
+           <th>Global Seq</th>
+           <th>Stream</th>
+           <th>Seq</th>
+           <th>EventType</th>
+           <th>EventData</th>
+       </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>1</td>
+            <td>person-1</td>
+            <td>1</td>
+            <td>Created</td>
+            <td>{ ...}</td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td>person-1</td>
+            <td>2</td>
+            <td>EmailAddressChanged</td>
+            <td>{ ...}</td>
+        </tr>
+        <tr>
+            <td>3</td>
+            <td>person-2</td>
+            <td>1</td>
+            <td>Created</td>
+            <td>{ ...}</td>
+        </tr>
+        <tr>
+            <td>4</td>
+            <td>person-1</td>
+            <td>3</td>
+            <td>NameChanged</td>
+            <td>{ ...}</td>
+        </tr>
+        <tr>
+            <td>5</td>
+            <td>person-3</td>
+            <td>1</td>
+            <td>Created</td>
+            <td>{ ...}</td>
+        </tr>
+    </tbody>
+</table>
+
+<p>Unfortunately there is a problem if two transactions are adding an event concurrently to the Event Store (note, that this is about adding events to different streams. It is not the same as the case mentioned in <a href="#optimistic-locking">Optimistic Locking</a> where events are added concurrently to the <em>same</em> stream). The first transaction would write an event with the global sequence number 3 and the second transaction with number 4. Now if for some reason the second transaction commits first then the global sequence would be 1, 2, 4. As soon as the other transaction commits, the sequence would be 1, 2, 3, 4. A projection might first see the new event with number 4 and store this as the last sequence number read. So it will miss event 3! It will never read this event because the it will store 4 as the highest event processed.</p>
+
+<p>This problem was <a href="https://github.com/akka/akka-persistence-jdbc/issues/96">filed as a bug</a> some time ago in the <a href="https://github.com/akka/akka-persistence-jdbc">akka-persistence-jdbc project</a> (note that the actual problem is of course not akka specific). The solution they chose is basically as follows (I haven’t really studied the implementation): If there are gaps in the overall sequence number then the Read Journal waits for a configurable amount of time to see whether the gap is filled or not. If the journal sees 1,2,4 then it will note that there is event number 3 missing. It will wait for a moment to see whether 3 appears.</p>
+
+<p>I think this makes it clear that Greg Young is right, and it is not really trivial to implement your own event store.</p>
+
+<h1 id="kafka-as-an-event-store">Kafka as an Event Store</h1>
+
+<p>I don’t really know Kafka. So I’m probably not qualified… Still… here are my thoughts on this:</p>
+
+<p>It’s of course possible to store events in Kafka. One problem with Kafka as an Event Store is the fact that it is difficult t   o read a “Stream” of events (in the sense of Event Sourcing) efficiently. You can read more about this in this <a href="https://de.slideshare.net/gschmutz/kafka-as-an-event-store-is-it-good-enough">presentation from Guido Schmutz</a>. However I think that there is one essential point missing in his presentation: Locking. At least the approach with the <code class="highlighter-rouge">expectedVersion</code> (see <a href="#optimistic-locking">Optimistic Locking</a>) is not feasible with Kafka as far that I know. There is an <a href="https://issues.apache.org/jira/browse/KAFKA-2260">open issue</a> which basically requests something similar to an <code class="highlighter-rouge">expectedVersion</code> in Kafka. Another good blog post I found while writing this post is <a href="https://medium.com/serialized-io/apache-kafka-is-not-for-event-sourcing-81735c3cf5c">this one here</a> which states basically the same I do.</p>
+
+<p>There is another reason one might not want to use Kafka: (Micro?)Services will depend on a (central?) message broker. If Kafka is not used then probably a RDBMS is. So you depend on an RDBMS… You could of course deploy Kafka per microservice but this is probably more of an overhead than do the same with a database. I’m not sure but to me it does not seem to make much sense.</p>
+
+<p>Don’t get me wrong. I’m not saying Kafka is bad. It’s just not suited as an Event Store. I think that Kafka is probably a very good choice to publish events that have to be consumed by other Bounded Contexts (read about this <a href="#integration-with-other-systems">below</a>).</p>
+
+<h1 id="eventstore-as-an-event-store">EventStore as an Event Store</h1>
+
+<p><a href="https://eventstore.org/">EventStore</a> is an Open Source Event Store Implementation by Greg Young. It was one of the first Event Store implementations I came across. I have no real experience other than playing around a bit with it.</p>
+
+<p>As with Kafka I’m not sure whether it is the right approach to have a single, central Event Store for all your applications. Yes I know… it has “High Availability”, “Great Performance” etc. And you could of course also deploy EventStore per microservice. EventStore also provides things like “User defined projections” which of course might be great as long as you are aware of the disadvantages of such dependencies.</p>
+
+<h1 id="akka-as-event-store">Akka as Event Store</h1>
+
+<p>Currently we are using <a href="https://doc.akka.io/docs/akka/current/persistence.html">Akka Persistence</a> as an “Event Store”. There are various implementations. We are currently using <a href="https://github.com/akka/akka-persistence-jdbc">akka-persistence-jdbc</a> which uses basically a relational table for events and one for snapshots. The nodes that are running our (clustered) application each write their events directly to the database. The database is per microservice. So there is no central broker (however there are different implementations and <a href="https://index.scala-lang.org/eventstore/eventstore.akka.persistence/akka-persistence-eventstore/7.0.1?target=_2.13">one of them</a> also allows <a href="https://eventstore.org/">Greg Young’s EventStore</a> to be used.</p>
+
+<p>I feel that this is the right choice. Not because we use Akka. The same could be achieved in a different way. The main advantage in my opinion is the fact that the Event Store is per microservice and we do not depend on a message broker.</p>
+
+<h1 id="integration-with-other-systems">Integration with other Systems</h1>
+
+<p>As mentioned before, Event Sourcing Events ar primarily used to reconstitute the state of your system. Of course these events could also be directly “published” and then consumed by other Systems and Bounded Contexts.</p>
+
+<p>Personally I don’t like this idea very much. The events are very specific. As soon as these events are “in the wild” you have to care about other consumers and not just yourself. Also regarding security (especially privacy) this may get very complicated. There may be information in your system that nobody else must know. But if you just publish all events then you cannot protect this information (or at least it could get complicated very quickly).</p>
+
+<p>There is still an advantage in using Event Sourcing because it possible to listen to specific events and then publish “Integration Events” that are used for communication with other systems. In a “classic” application that persists the current state of the system such events have to be created apart.</p>
+
+<p>However I would definitely consider the direct consumption of Event Sourcing Events inside the same Bounded Context (as in DDD). This includes Read Models/Projections, Process Managers etc.</p>
+
+<h1 id="summary">Summary</h1>
+
+<ul>
+  <li>Implementing Event Stores is not trivial. Use an existing implementation if possible.</li>
+  <li>Whatever Event Store you’re using: Make sure it allows you to ensure invariants either with Optimistic Locking or by otherwise ensuring sequential processing of commands per Aggregate.</li>
+  <li>I prefer an Event Store per microservice over a central Event Store.</li>
+  <li>Consume Event Sourcing Events only inside the same Bounded Context.</li>
+  <li>Kafka is not suited as an Event Store but might be great for publish events for consumption by other systems or Bounded Contexts</li>
+</ul>
+
+
+                </p>
+            </div>
+        </section>
+
+        
+
+
+<div id="disqus_thread"></div>
+<script>
+
+    var disqus_config = function () {
+        this.page.url = "http://idontbyte.jaun.org/blog/2020/02/eventsourcing-notes-on-eventstores";  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = "/blog/2020/02/eventsourcing-notes-on-eventstores"; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+    };
+    (function() { // DON'T EDIT BELOW THIS LINE
+        var d = document, s = d.createElement('script');
+        s.src = '//idontbyte-jaun-org.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+
+
+        
+
+<div class="footer">
+    <div class="pure-menu pure-menu-horizontal">
+        &copy; 2019 - Oliver Jaun
+        <ul>
+            <li class="pure-menu-item"><a href="/privacy_policy.html" class="pure-menu-link">Privacy Policy</a></li>
+            <li class="pure-menu-item"><a href="/disclosure_statement.html" class="pure-menu-link">Disclosure Statement</a></li>
+        </ul>
+    </div>
+</div>
+    </div>
+
+
+
+</div>
+
+
+</body>
+
+</html>

@@ -66,7 +66,7 @@ U <-- AS
 Note:
 - It uses a classic DDD approach using a Repository to load Aggregates. The explicit call to `save()` is not compliant with the [original definition by Eric Evans](https://domainlanguage.com/wp-content/uploads/2016/05/DDD_Reference_2015-03.pdf) which states that a Repository is "a service that can provide the illusion of an in-memory collection of all objects of that aggregate’s root type". But this problem exists with other implementations as well and is kind of an "accepted violation" of DDD :-)
 - The Aggregate is loaded from the Event Store every time a new request is processed. This could be a performance issue. In such cases snapshots may be used (refere to [Greg Young's Paper](https://cqrs.files.wordpress.com/2010/11/cqrs_documents.pdf) if you don't konw what snapshots are)
-- The fact that there might be multiple concurrent requests makes it necessary to have some kind of locking in order to maintain consistency in the aggregate. Check out [my other post about Event Stores]({% post_url 2020-01-04-eventsourcing-notes-on-eventstores %}) if you want to know more.
+- The fact that there might be multiple concurrent requests makes it necessary to have some kind of locking in order to maintain consistency in the aggregate. Check out [my other post about Event Stores]({% post_url 2020-02-23-eventsourcing-notes-on-eventstores %}) if you want to know more.
 - The User's invocation is shown as a synchronous one. It could be asynchronous but still loading the aggregate, withdrawing the money and saving the aggregate occupies one thread.
 
 The Application Service's code could look like this (ignoring error handling etc.):
