@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <url>
-<loc>http://localhost:4000/blog/2019/09/Idempotence</loc>
+<loc>https://idontbyte.jaun.org/blog/2019/09/Idempotence</loc>
 <lastmod>2019-09-23T00:00:00+02:00</lastmod>
 </url>
 <url>
-<loc>http://localhost:4000/blog/2019/10/beanvalidation</loc>
+<loc>https://idontbyte.jaun.org/blog/2019/10/beanvalidation</loc>
 <lastmod>2019-10-10T00:00:00+02:00</lastmod>
 </url>
 <url>
-<loc>http://localhost:4000/blog/2020/02/eventsourcing-notes-on-eventstores</loc>
+<loc>https://idontbyte.jaun.org/blog/2020/02/eventsourcing-notes-on-eventstores</loc>
 <lastmod>2020-02-23T00:00:00+01:00</lastmod>
 </url>
 <url>
-<loc>http://localhost:4000/about</loc>
+<loc>https://idontbyte.jaun.org/about</loc>
 </url>
 </urlset>
