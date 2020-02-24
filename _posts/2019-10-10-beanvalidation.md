@@ -206,7 +206,7 @@ The problem with this is, that if the user passes an invalid email address then 
  
  Quite a lot of code just for an email address. Apart form that it would also be necessary to do something similar with the `RegistrationCommand`. This would be even more difficult because the `RegistrationCommand` contains three attributes. The name, the email address or the password... any of these could be wrong. How do we handle this properly?
  
- Assuming multiple things are wrong a UI would probably want to display all things at once. This code would get event more complicated because it would be necessary to collect multiple validation errors and return them summarized. That's where bean validation comes into play. First we add some annotations to the `RegistrationDto`:
+ Assuming multiple things are wrong a UI would probably want to display all things at once. This code would get even more complicated because it would be necessary to collect multiple validation errors and return them summarized. That's where bean validation comes into play. First we add some annotations to the `RegistrationDto`:
  
 {% highlight java %}
 public class RegistrationDto implements Serializable {

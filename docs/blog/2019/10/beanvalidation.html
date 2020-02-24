@@ -291,7 +291,7 @@
 
 <p>Quite a lot of code just for an email address. Apart form that it would also be necessary to do something similar with the <code class="highlighter-rouge">RegistrationCommand</code>. This would be even more difficult because the <code class="highlighter-rouge">RegistrationCommand</code> contains three attributes. The name, the email address or the password… any of these could be wrong. How do we handle this properly?</p>
 
-<p>Assuming multiple things are wrong a UI would probably want to display all things at once. This code would get event more complicated because it would be necessary to collect multiple validation errors and return them summarized. That’s where bean validation comes into play. First we add some annotations to the <code class="highlighter-rouge">RegistrationDto</code>:</p>
+<p>Assuming multiple things are wrong a UI would probably want to display all things at once. This code would get even more complicated because it would be necessary to collect multiple validation errors and return them summarized. That’s where bean validation comes into play. First we add some annotations to the <code class="highlighter-rouge">RegistrationDto</code>:</p>
 
 <figure class="highlight"><pre><code class="language-java" data-lang="java"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">RegistrationDto</span> <span class="kd">implements</span> <span class="nc">Serializable</span> <span class="o">{</span>
 
