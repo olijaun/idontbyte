@@ -1,0 +1,19 @@
+@startuml
+
+database "Event Store" as ES
+[UI] as UI
+
+
+component "Application" as A {
+  [Command Side] as C
+  [Query Side] as Q
+}
+
+UI -down-> C : send command
+UI -down-> Q : query data
+
+C -down-> ES : store events 
+Q -down-> ES : read events
+
+
+@enduml

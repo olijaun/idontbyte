@@ -34,6 +34,7 @@ So what is CQRS then? In Command Query Responsibility Segregation (CQRS) the app
 database "Event Store" as ES
 [UI] as UI
 
+
 component "Application" as A {
   [Command Side] as C
   [Query Side] as Q

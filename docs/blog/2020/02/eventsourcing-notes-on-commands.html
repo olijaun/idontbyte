@@ -85,7 +85,7 @@
                 <p class="post-meta">
                     By <a class="post-anchor" href="/about">Oliver Jaun</a>,
                     
-                    <time datetime='2020-02-27'>Feb 27, 2020</time>
+                    <time datetime='2020-02-26'>Feb 26, 2020</time>
                     
 
                     
@@ -129,7 +129,7 @@
 
 <p>So what is CQRS then? In Command Query Responsibility Segregation (CQRS) the application is split into a query/read and a command/write side which allows for better scaling and separation of concern. Usually reading is performed more often than writing. The query side can be optimized for reading and even be deployed independently of the command side (note that the arrows in the diagram show dependencies not data flow).</p>
 
-<p><img src="/uml/732bab81c7fed84f3394f02a8344f221.svg" alt="PlantUML SVG diagram" class="plantuml" /></p>
+<p><img src="/uml/3fa32dbb378b78559cd8537e3c97197a.svg" alt="PlantUML SVG diagram" class="plantuml" /></p>
 
 <p>In eventsourced applications CQRS can make a lot of sense. With just Event Sourcing it can be difficult and/or slow to perform e.g. queries on your event streams. With CQRS the query side builds so called Projections (or Read/Query Models) using the events produced by the command side. This is usually done asynchronously. One important consequence of this is that the query side might not represent the current state. For example a UI that writes some data and reads them shortly afterwards might not read what it has just written. This has to be taken into account. The advantages are separation of concern and performance among others.</p>
 
