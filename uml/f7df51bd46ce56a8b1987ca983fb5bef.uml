@@ -1,0 +1,16 @@
+@startuml
+
+
+actor a
+
+component "Application" {
+
+[Read Side] as R  
+[Write Side] as W
+
+}
+
+a -> 
+
+
+@enduml

@@ -1,0 +1,21 @@
+@startuml
+
+
+database "EventStore" as ES
+[UI] as UI
+
+component "Application" as A {
+
+[Write Side] as W
+[Read Side] as R  
+
+}
+
+UI -> R
+UI -> W
+
+R -> ES
+W <- ES
+
+
+@enduml

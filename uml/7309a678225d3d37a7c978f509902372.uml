@@ -1,0 +1,15 @@
+@startuml
+
+actor "User" as U
+participant "Account Service" as S
+participant "EventStore" as ES
+
+U -> S: withdraw 10 CHF
+S -> ES: load account
+S <-- ES
+S -> S: check balance
+S -> ES: store "Withdrawn" Event
+S <-- ES:
+U <-- S: ok message
+
+@enduml

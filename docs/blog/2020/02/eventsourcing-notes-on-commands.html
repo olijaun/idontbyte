@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A layout example that shows off a blog page with a list of posts.">
+    <title>Event Sourcing - Commands can be rejected</title>
+    <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.1/build/pure-min.css" integrity="sha384-"
+          crossorigin="anonymous">
+
+    <!--[if lte IE 8]>
+    <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.1/build/grids-responsive-old-ie-min.css">
+    <![endif]-->
+    <!--[if gt IE 8]><!-->
+    <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.1/build/grids-responsive-min.css">
+    <!--<![endif]-->
+
+
+    <!--[if lte IE 8]>
+    <link rel="stylesheet" href="css/layouts/blog-old-ie.css">
+    <![endif]-->
+    <!--[if gt IE 8]><!-->
+    <link rel="stylesheet" href="/assets/blog.css">
+    <!--<![endif]-->
+
+    <link rel="me" href="https://twitter.com/oliverjaun" />
+    <link rel="me" href="https://github.com/olijaun" />
+    <link rel="me" href="mailto:oliver@jaun.org" />
+
+    <link rel="webmention" href="https://webmention.io/idontbyte.jaun.org/webmention" />
+    <link rel="pingback" href="https://webmention.io/idontbyte.jaun.org/xmlrpc" />
+
+    <script>
+        (function (i, s, o, g, r, a, m) {
+            i['GoogleAnalyticsObject'] = r;
+            i[r] = i[r] || function () {
+                (i[r].q = i[r].q || []).push(arguments)
+            }, i[r].l = 1 * new Date();
+            a = s.createElement(o),
+                m = s.getElementsByTagName(o)[0];
+            a.async = 1;
+            a.src = g;
+            m.parentNode.insertBefore(a, m)
+        })(window, document, 'script', 'https://www.google-analytics.com/analytics.js', 'ga');
+
+        ga('create', 'UA-50141806-2', 'auto');
+        ga('send', 'pageview');
+
+    </script>
+
+</head>
+
+
+<body>
+
+<div id="layout" class="pure-g">
+
+    <div class="sidebar pure-u-1 pure-u-md-1-4">
+    <div class="header">
+        <h1 class="brand-title">I don't byte</h1>
+        <h2 class="brand-tagline">Oliver Jaun's Blog On Software Development</h2>
+
+        <nav class="nav">
+            <ul class="nav-list">
+                <li class="nav-item">
+                    <a class="pure-button" href="/">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="pure-button" href="/about.html">About</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+    <div class="content pure-u-1 pure-u-md-3-4">
+        <!-- A single blog post -->
+        <section class="post">
+
+            <header class="post-header">
+
+                <h2 class="post-title">Event Sourcing - Commands can be rejected</h2>
+
+                <p class="post-meta">
+                    By <a class="post-anchor" href="/about">Oliver Jaun</a>,
+                    
+                    <time datetime='2020-02-27'>Feb 27, 2020</time>
+                    
+
+                    
+
+
+                    
+                    <a class="post-category post-category-architecture" href="#">architecture</a>
+                    
+                    <a class="post-category post-category-design" href="#">design</a>
+                    
+                    <a class="post-category post-category-eventsourcing" href="#">eventsourcing</a>
+                    
+                </p>
+            </header>
+
+            <div class="post-description">
+                <p>
+                    <p>This is the second part in a series about Event Sourcing. In the past year I was involved in the development of a Java application using Event Sourcing. Actually we did it twice using two different approaches. In this post I’d like to share some thoughts about commands in the context of CQRS and Event Sourcing. See also my other post on Event Sourcing:</p>
+
+<ul>
+  <li>Part I: <a href="/blog/2020/02/eventsourcing-notes-on-eventstores">Notes on Event Stores</a></li>
+</ul>
+
+<p>This post assumes that you know what Event Sourcing is. If not then I recommend that you read <a href="https://cqrs.files.wordpress.com/2010/11/cqrs_documents.pdf">this Document from Greg Young</a>.</p>
+
+<h1 id="difference-between-cqs-and-cqrs">Difference between CQS and CQRS</h1>
+
+<p>Bertrand Meyer described the Command Query Segregation Pattern (CQS): “It states that every method should either be a command that performs an action, or a query that returns data to the caller, but not both” (see <a href="https://en.wikipedia.org/wiki/Command%E2%80%93query_separation">Wikipedia</a>).</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="c1">// mutates state but does not return anything</span>
+<span class="kd">public</span> <span class="kt">void</span> <span class="nf">command</span><span class="o">(</span><span class="kt">int</span> <span class="n">input</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">state</span> <span class="o">=</span> <span class="n">input</span><span class="o">;</span>
+<span class="o">}</span>
+
+<span class="c1">// returns a value but does not mutate state</span>
+<span class="kd">public</span> <span class="kt">int</span> <span class="nf">query</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="n">state</span><span class="o">;</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>So what is CQRS then? In Command Query Responsibility Segregation (CQRS) the application is split into a query/read and a command/write side which allows for better scaling and separation of concern. Usually reading is performed more often than writing. The query side can be optimized for reading and even be deployed independently of the command side (note that the arrows in the diagram show dependencies not data flow).</p>
+
+<p><img src="/uml/732bab81c7fed84f3394f02a8344f221.svg" alt="PlantUML SVG diagram" class="plantuml" /></p>
+
+<p>In eventsourced applications CQRS can make a lot of sense. With just Event Sourcing it can be difficult and/or slow to perform e.g. queries on your event streams. With CQRS the query side builds so called Projections (or Read/Query Models) using the events produced by the command side. This is usually done asynchronously. One important consequence of this is that the query side might not represent the current state. For example a UI that writes some data and reads them shortly afterwards might not read what it has just written. This has to be taken into account. The advantages are separation of concern and performance among others.</p>
+
+<p>Be aware of the fact that the command side must not access the query side! Note that there is no such arrow in the diagram.</p>
+
+<h1 id="commands-can-fail-or-be-rejected">Commands can fail or be rejected</h1>
+
+<p>It may seem trivial but it’s important to note that a command in CQRS may fail or it might be rejected. Greg Young’s <a href="https://github.com/gregoryyoung/m-r/tree/master/SimpleCQRS">CQRS Example Application</a> does clearly show this:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">class</span> <span class="nc">InventoryItem</span> <span class="p">:</span> <span class="n">AggregateRoot</span> <span class="p">{</span>
+
+    <span class="c1">// ...</span>
+
+    <span class="k">public</span> <span class="k">void</span> <span class="nf">ChangeName</span><span class="p">(</span><span class="kt">string</span> <span class="n">newName</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="kt">string</span><span class="p">.</span><span class="nf">IsNullOrEmpty</span><span class="p">(</span><span class="n">newName</span><span class="p">))</span> <span class="k">throw</span> <span class="k">new</span> <span class="nf">ArgumentException</span><span class="p">(</span><span class="s">"newName"</span><span class="p">);</span>
+        <span class="nf">ApplyChange</span><span class="p">(</span><span class="k">new</span> <span class="nf">InventoryItemRenamed</span><span class="p">(</span><span class="n">_id</span><span class="p">,</span> <span class="n">newName</span><span class="p">));</span>
+    <span class="p">}</span>
+    
+    <span class="c1">// ...</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>The aggregate root <code class="highlighter-rouge">InventoryItem</code> simply throws an <code class="highlighter-rouge">ArgumentException</code> if <code class="highlighter-rouge">newName</code> is null. No event is persisted in this case.</p>
+
+<p>An event in contrast states a fact, something that happened. An event cannot be rejected.</p>
+
+<p>Let’s look at an example where a command is processed and finally an event is emitted: If a user withdraws 10 CHF from his account which has a balance of 42 CHF then everything is fine. An event will be emitted that states that 10 CHF have been withdrawn. Note that the following sequence diagrams are very schematic and do not show UIs etc.</p>
+
+<p><img src="/uml/55b5c82fb49fcf47bac0f57f79456466.svg" alt="PlantUML SVG diagram" class="plantuml" /></p>
+
+<p>If the user tries to withdraw 50 CHF from his account that has a balance of 42 CHF then the command to do so must be rejected. There is no event stored in the Event Store. Of course business people might still decide that they want such attempts to be stored but usually this is nothing to be stored in an Event Store. It could be stored in a log file or a special table etc.</p>
+
+<p><img src="/uml/4fee7d92186a4aeb1b53b0f4ea3b7677.svg" alt="PlantUML SVG diagram" class="plantuml" /></p>
+
+<p>My reasoning is that in eventsourcing events are primarily used to reconstitute the state of the system. A rejected command is not needed to reconstitute state.</p>
+
+<p>In Microsoft’s <a href="http://cqrsjourney.github.io/">a CQRS Journey</a> there is an example involving a seat reservation: A user “registers to a conference” via an “Order” Aggregate. The Order Aggregate emitts an “OrderPlaced” Event which is then acted upon by the Process Manager which calls the “ConferenceSeatsAvailabilityAggregate” to make a seat reservation. If the reservation succeeds a “ReservationAccepted” Event is emitted. If it fails a “ResevationRejected” Event is emitted. I don’t really see why it is necessary to use events for this. The command could just be rejected. In a later stage they change the example to put the seats that could not be reserved to a waiting list. OK, that could be a reason but then this could also be done by the ProcessManager when he gets the outcome of the command. And then one could also argue that the outcome of a command is also a kind of event. This is a valid argument but I still think it is not necessary to persist this kind of “command-events”.</p>
+
+<p>Commands may be executed synchronous or asynchronously. This does not change the fact that they can be rejected of course. In case of asynchronous command execution It is necessary to have a means to get a response for a command. The caller might want to know the reason for the rejection in order to display it in a UI etc. This could be done by polling for the state of command execution (a more elegant solution might be to use to user technologies like <a href="https://en.wikipedia.org/wiki/Server-sent_events">Server Sent Events</a> etc. in order to avoid polling). As in synchronous execution there will probably a timeout for polling the state. One solution in such cases is to execute the command again which could lead to problems if the system called is not idempotent (<a href="/blog/2019/09/Idempotence">see my post on Idempotence</a>)</p>
+
+<p><img src="/uml/876b2f024204e310c4897dd8acfddc11.svg" alt="PlantUML SVG diagram" class="plantuml" /></p>
+
+<h1 id="summary">Summary</h1>
+
+<p>Regardless of whether commands are sent synchronously or asynchronously to the write side of a CQRS application they may be rejected or they may fail. The caller has to react appropriately.</p>
+
+                </p>
+            </div>
+        </section>
+
+        
+
+
+<div id="disqus_thread"></div>
+<script>
+
+    var disqus_config = function () {
+        this.page.url = "http://idontbyte.jaun.org/blog/2020/02/eventsourcing-notes-on-commands";  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = "/blog/2020/02/eventsourcing-notes-on-commands"; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+    };
+    (function() { // DON'T EDIT BELOW THIS LINE
+        var d = document, s = d.createElement('script');
+        s.src = '//idontbyte-jaun-org.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+
+
+        
+
+<div class="footer">
+    <div class="pure-menu pure-menu-horizontal">
+        &copy; 2019, 2020 - Oliver Jaun
+        <ul>
+            <li class="pure-menu-item"><a href="/privacy_policy.html" class="pure-menu-link">Privacy Policy</a></li>
+            <li class="pure-menu-item"><a href="/disclosure_statement.html" class="pure-menu-link">Disclosure Statement</a></li>
+        </ul>
+    </div>
+</div>
+    </div>
+
+
+
+</div>
+
+
+</body>
+
+</html>

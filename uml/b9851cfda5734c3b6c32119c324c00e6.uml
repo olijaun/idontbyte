@@ -1,0 +1,21 @@
+@startuml
+
+left to right direction
+database "Event Store" as ES
+[UI] as UI
+
+component "Application" as A {
+  [Write Side] as W
+  component "Read Side" as R {
+    [Projection]
+  } 
+}
+
+UI -down-> W : send command
+UI -down-> R : query data
+
+W -down-> ES : store events 
+R <-down- ES : read events
+
+
+@enduml

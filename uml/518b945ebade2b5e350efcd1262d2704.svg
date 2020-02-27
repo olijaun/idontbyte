@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="169px" preserveAspectRatio="none" style="width:357px;height:169px;" version="1.1" viewBox="0 0 357 169" width="357px" zoomAndPan="magnify"><defs><filter height="300%" id="f1pgli4mv1wxy" width="300%" x="-1" y="-1"><feGaussianBlur result="blurOut" stdDeviation="2.0"/><feColorMatrix in="blurOut" result="blurOut2" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .4 0"/><feOffset dx="4.0" dy="4.0" in="blurOut2" result="blurOut3"/><feBlend in="SourceGraphic" in2="blurOut3" mode="normal"/></filter></defs><g><!--cluster A--><rect fill="#FFFFFF" filter="url(#f1pgli4mv1wxy)" height="142" style="stroke: #000000; stroke-width: 2.0;" width="106" x="91" y="16"/><rect fill="#FFFFFF" height="10" style="stroke: #000000; stroke-width: 2.0;" width="15" x="177" y="21"/><rect fill="#FFFFFF" height="2" style="stroke: #000000; stroke-width: 2.0;" width="4" x="175" y="23"/><rect fill="#FFFFFF" height="2" style="stroke: #000000; stroke-width: 2.0;" width="4" x="175" y="27"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="87" x="100.5" y="41.9951">Application</text><!--entity W--><rect fill="#FEFECE" filter="url(#f1pgli4mv1wxy)" height="36.2969" style="stroke: #A80036; stroke-width: 1.5;" width="89" x="99.5" y="43"/><rect fill="#FEFECE" height="5" style="stroke: #A80036; stroke-width: 1.5;" width="10" x="94.5" y="48"/><rect fill="#FEFECE" height="5" style="stroke: #A80036; stroke-width: 1.5;" width="10" x="94.5" y="69.2969"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="69" x="109.5" y="65.9951">Write Side</text><!--entity R--><rect fill="#FEFECE" filter="url(#f1pgli4mv1wxy)" height="36.2969" style="stroke: #A80036; stroke-width: 1.5;" width="90" x="99" y="114"/><rect fill="#FEFECE" height="5" style="stroke: #A80036; stroke-width: 1.5;" width="10" x="94" y="119"/><rect fill="#FEFECE" height="5" style="stroke: #A80036; stroke-width: 1.5;" width="10" x="94" y="140.2969"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="70" x="109" y="136.9951">Read Side</text><!--entity ES--><path d="M249,84.5 C249,74.5 297,74.5 297,74.5 C297,74.5 345,74.5 345,84.5 L345,109.7969 C345,119.7969 297,119.7969 297,119.7969 C297,119.7969 249,119.7969 249,109.7969 L249,84.5 " fill="#FEFECE" filter="url(#f1pgli4mv1wxy)" style="stroke: #000000; stroke-width: 1.5;"/><path d="M249,84.5 C249,94.5 297,94.5 297,94.5 C297,94.5 345,94.5 345,84.5 " fill="none" style="stroke: #000000; stroke-width: 1.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="76" x="259" y="111.4951">EventStore</text><!--entity UI--><rect fill="#FEFECE" filter="url(#f1pgli4mv1wxy)" height="36.2969" style="stroke: #A80036; stroke-width: 1.5;" width="33" x="6" y="79"/><rect fill="#FEFECE" height="5" style="stroke: #A80036; stroke-width: 1.5;" width="10" x="1" y="84"/><rect fill="#FEFECE" height="5" style="stroke: #A80036; stroke-width: 1.5;" width="10" x="1" y="105.2969"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="13" x="16" y="101.9951">UI</text><!--link UI to W--><path d="M39.1393,92.0698 C53.3989,87.8448 74.6934,81.5353 94.375,75.7037 " fill="none" id="UI-W" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="99.3388,74.233,89.5732,72.9548,94.5448,75.6536,91.8461,80.6252,99.3388,74.233" style="stroke: #A80036; stroke-width: 1.0;"/><!--link UI to R--><path d="M39.1393,101.7932 C53.2791,105.8664 74.336,111.9322 93.8785,117.5617 " fill="none" id="UI-R" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="98.8092,118.9821,91.2682,112.647,94.0046,117.598,89.0536,120.3344,98.8092,118.9821" style="stroke: #A80036; stroke-width: 1.0;"/><!--link R to ES--><path d="M189.0775,121.6881 C206.2393,117.7622 225.9548,113.2522 243.8001,109.1699 " fill="none" id="R-ES" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="248.7802,108.0307,239.1148,106.1384,243.9061,109.1457,240.8988,113.937,248.7802,108.0307" style="stroke: #A80036; stroke-width: 1.0;"/><!--link W to ES--><path d="M193.5975,72.67 C211.3053,76.8365 231.2169,81.5216 248.8048,85.6599 " fill="none" id="W-ES" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="188.6652,71.5095,196.5097,77.4647,193.5323,72.6548,198.3422,69.6774,188.6652,71.5095" style="stroke: #A80036; stroke-width: 1.0;"/><!--
+@startuml
+
+left to right direction
+database "EventStore" as ES
+[UI] as UI
+
+component "Application" as A {
+
+[Write Side] as W
+[Read Side] as R  
+
+}
+
+UI -down-> W
+UI -down-> R
+
+R -down-> ES
+W <-down- ES
+
+
+@enduml
+
+PlantUML version 1.2017.15(Mon Jul 03 18:45:34 CEST 2017)
+(GPL source distribution)
+Java Runtime: Java(TM) SE Runtime Environment
+JVM: Java HotSpot(TM) 64-Bit Server VM
+Java Version: 1.8.0_191-b12
+Operating System: Linux
+OS Version: 4.15.0-76-generic
+Default Encoding: UTF-8
+Language: en
+Country: US
+--></g></svg>
