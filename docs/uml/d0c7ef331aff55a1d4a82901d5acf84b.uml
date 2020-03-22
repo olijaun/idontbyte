@@ -1,0 +1,19 @@
+@startuml
+
+hide empty members
+
+package org.jaun.app.domain {
+  class MyBusinessLogic
+  interface MyRepository
+  
+  MyBusinessLogic --> org.jaun.app.domain.MyRepository
+}
+
+package org.jaun.app.infrastructure {
+  
+  class MyJdbcRepositoryImpl
+  
+  org.jaun.app.domain.MyRepository <|-- MyJdbcRepositoryImpl
+}
+
+@enduml

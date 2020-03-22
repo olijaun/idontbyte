@@ -1,0 +1,13 @@
+@startuml
+
+
+package org.jaun.app.domain {
+  class MyBusinessLogic
+}
+
+package org.jaun.app.infrastructure {
+  class MyDao <|--  MyJdbDaoImpl
+}
+
+
+@enduml

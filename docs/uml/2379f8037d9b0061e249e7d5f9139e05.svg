@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="187px" preserveAspectRatio="none" style="width:339px;height:187px;" version="1.1" viewBox="0 0 339 187" width="339px" zoomAndPan="magnify"><defs><filter height="300%" id="f1of2x7lc68hyj" width="300%" x="-1" y="-1"><feGaussianBlur result="blurOut" stdDeviation="2.0"/><feColorMatrix in="blurOut" result="blurOut2" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .4 0"/><feOffset dx="4.0" dy="4.0" in="blurOut2" result="blurOut3"/><feBlend in="SourceGraphic" in2="blurOut3" mode="normal"/></filter></defs><g><!--cluster org.jaun.app.domain--><polygon fill="#FFFFFF" filter="url(#f1of2x7lc68hyj)" points="14,16,181,16,188,38.2969,317,38.2969,317,175,14,175,14,16" style="stroke: #000000; stroke-width: 2.0;"/><line style="stroke: #000000; stroke-width: 2.0;" x1="14" x2="188" y1="38.2969" y2="38.2969"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="161" x="18" y="30.9951">org.jaun.app.domain</text><!--class MyBusinessLogic--><rect fill="#FEFECE" filter="url(#f1of2x7lc68hyj)" height="32" id="MyBusinessLogic" style="stroke: #A80036; stroke-width: 1.5;" width="136" x="173" y="43"/><ellipse cx="188" cy="59" fill="#ADD1B2" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/><path d="M190.9688,64.6406 Q190.3906,64.9375 189.75,65.0859 Q189.1094,65.2344 188.4063,65.2344 Q185.9063,65.2344 184.5859,63.5859 Q183.2656,61.9375 183.2656,58.8125 Q183.2656,55.6875 184.5859,54.0313 Q185.9063,52.375 188.4063,52.375 Q189.1094,52.375 189.7578,52.5313 Q190.4063,52.6875 190.9688,52.9844 L190.9688,55.7031 Q190.3438,55.125 189.75,54.8516 Q189.1563,54.5781 188.5313,54.5781 Q187.1875,54.5781 186.5,55.6484 Q185.8125,56.7188 185.8125,58.8125 Q185.8125,60.9063 186.5,61.9766 Q187.1875,63.0469 188.5313,63.0469 Q189.1563,63.0469 189.75,62.7734 Q190.3438,62.5 190.9688,61.9219 L190.9688,64.6406 Z "/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="104" x="202" y="63.1543">MyBusinessLogic</text><!--class MyRepository--><rect fill="#FEFECE" filter="url(#f1of2x7lc68hyj)" height="32" id="MyRepository" style="stroke: #A80036; stroke-width: 1.5;" width="115" x="22.5" y="43"/><ellipse cx="37.5" cy="59" fill="#B4A7E5" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/><path d="M33.4219,54.7656 L33.4219,52.6094 L40.8125,52.6094 L40.8125,54.7656 L38.3438,54.7656 L38.3438,62.8438 L40.8125,62.8438 L40.8125,65 L33.4219,65 L33.4219,62.8438 L35.8906,62.8438 L35.8906,54.7656 L33.4219,54.7656 Z "/><text fill="#000000" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="83" x="51.5" y="63.1543">MyRepository</text><!--class org.jaun.app.domain.MyRepository--><rect fill="#FEFECE" filter="url(#f1of2x7lc68hyj)" height="32" id="org.jaun.app.domain.MyRepository" style="stroke: #A80036; stroke-width: 1.5;" width="114" x="184" y="135"/><ellipse cx="199" cy="151" fill="#ADD1B2" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/><path d="M201.9688,156.6406 Q201.3906,156.9375 200.75,157.0859 Q200.1094,157.2344 199.4063,157.2344 Q196.9063,157.2344 195.5859,155.5859 Q194.2656,153.9375 194.2656,150.8125 Q194.2656,147.6875 195.5859,146.0313 Q196.9063,144.375 199.4063,144.375 Q200.1094,144.375 200.7578,144.5313 Q201.4063,144.6875 201.9688,144.9844 L201.9688,147.7031 Q201.3438,147.125 200.75,146.8516 Q200.1563,146.5781 199.5313,146.5781 Q198.1875,146.5781 197.5,147.6484 Q196.8125,148.7188 196.8125,150.8125 Q196.8125,152.9063 197.5,153.9766 Q198.1875,155.0469 199.5313,155.0469 Q200.1563,155.0469 200.75,154.7734 Q201.3438,154.5 201.9688,153.9219 L201.9688,156.6406 Z "/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="82" x="213" y="155.1543">MyRepository</text><!--link MyBusinessLogic to org.jaun.app.domain.MyRepository--><path d="M241,75.0252 C241,90.1037 241,112.7931 241,129.4514 " fill="none" id="MyBusinessLogic-org.jaun.app.domain.MyRepository" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="241,134.8498,245,125.8498,241,129.8498,237,125.8498,241,134.8498" style="stroke: #A80036; stroke-width: 1.0;"/><!--
+@startuml
+
+hide empty members
+
+package org.jaun.app.domain {
+  class MyBusinessLogic
+  interface MyRepository
+  
+  MyBusinessLogic - -> org.jaun.app.domain.MyRepository
+}
+
+
+
+@enduml
+
+PlantUML version 1.2017.15(Mon Jul 03 18:45:34 CEST 2017)
+(GPL source distribution)
+Java Runtime: Java(TM) SE Runtime Environment
+JVM: Java HotSpot(TM) 64-Bit Server VM
+Java Version: 1.8.0_191-b12
+Operating System: Linux
+OS Version: 4.15.0-91-generic
+Default Encoding: UTF-8
+Language: en
+Country: US
+--></g></svg>

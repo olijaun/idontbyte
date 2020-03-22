@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A layout example that shows off a blog page with a list of posts.">
+    <title>Event Sourcing - Implementation Considerations</title>
+    <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.1/build/pure-min.css" integrity="sha384-"
+          crossorigin="anonymous">
+
+    <!--[if lte IE 8]>
+    <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.1/build/grids-responsive-old-ie-min.css">
+    <![endif]-->
+    <!--[if gt IE 8]><!-->
+    <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.1/build/grids-responsive-min.css">
+    <!--<![endif]-->
+
+
+    <!--[if lte IE 8]>
+    <link rel="stylesheet" href="css/layouts/blog-old-ie.css">
+    <![endif]-->
+    <!--[if gt IE 8]><!-->
+    <link rel="stylesheet" href="/assets/blog.css">
+    <!--<![endif]-->
+
+    <link rel="me" href="https://twitter.com/oliverjaun" />
+    <link rel="me" href="https://github.com/olijaun" />
+    <link rel="me" href="mailto:oliver@jaun.org" />
+
+    <link rel="webmention" href="https://webmention.io/idontbyte.jaun.org/webmention" />
+    <link rel="pingback" href="https://webmention.io/idontbyte.jaun.org/xmlrpc" />
+
+    <script>
+        (function (i, s, o, g, r, a, m) {
+            i['GoogleAnalyticsObject'] = r;
+            i[r] = i[r] || function () {
+                (i[r].q = i[r].q || []).push(arguments)
+            }, i[r].l = 1 * new Date();
+            a = s.createElement(o),
+                m = s.getElementsByTagName(o)[0];
+            a.async = 1;
+            a.src = g;
+            m.parentNode.insertBefore(a, m)
+        })(window, document, 'script', 'https://www.google-analytics.com/analytics.js', 'ga');
+
+        ga('create', 'UA-50141806-2', 'auto');
+        ga('send', 'pageview');
+
+    </script>
+
+</head>
+
+
+<body>
+
+<div id="layout" class="pure-g">
+
+    <div class="sidebar pure-u-1 pure-u-md-1-4">
+    <div class="header">
+        <h1 class="brand-title">I don't byte</h1>
+        <h2 class="brand-tagline">Oliver Jaun's Blog On Software Development</h2>
+
+        <nav class="nav">
+            <ul class="nav-list">
+                <li class="nav-item">
+                    <a class="pure-button" href="/">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="pure-button" href="/about.html">About</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+    <div class="content pure-u-1 pure-u-md-3-4">
+        <!-- A single blog post -->
+        <section class="post">
+
+            <header class="post-header">
+
+                <h2 class="post-title">Event Sourcing - Implementation Considerations</h2>
+
+                <p class="post-meta">
+                    By <a class="post-anchor" href="/about">Oliver Jaun</a>,
+                    
+                    <time datetime='2020-01-06'>Jan 6, 2020</time>
+                    
+
+                    
+
+
+                    
+                    <a class="post-category post-category-architecture" href="#">architecture</a>
+                    
+                    <a class="post-category post-category-design" href="#">design</a>
+                    
+                    <a class="post-category post-category-eventsourcing" href="#">eventsourcing</a>
+                    
+                </p>
+            </header>
+
+            <div class="post-description">
+                <p>
+                    <p>In the last month we have implemented a Java application using Event Sourcing. Actually we did it twice using two different designs. In this post I’d like to show the two approaches and their advantages and disadvantages.</p>
+
+<p>This post assumes that you know what Event Sourcing is. If not then I recommend that you read <a href="https://cqrs.files.wordpress.com/2010/11/cqrs_documents.pdf">this Document from Greg Young</a>.</p>
+
+<h1 id="why-event-sourcing">Why Event Sourcing?</h1>
+
+<p>So why did we actually choose Event Sourcing for our system? To be honest: It was not really necessary. Our main goal was to learn about Event Sourcing. The system we’ve implemented was quite simple and we could have implemented as a simple CRUD application using a relational database. But because it is simple it also served us very well in order to learn something new without failing on a large scale – if we should fail.</p>
+
+<p>Some of the reasons to use Event Sourcing can be performance and scalability. Especially if you combine it with CQRS the separation of the “read” from the “write” side can be an advantage in this respect. However performance and scalability is not really a concern for our application.</p>
+
+<p>One business advantage is that you have a complete history of all your events. I think this is already a very good reason to use Event Sourcing. Of course there are other ways for implementing a history. My company has done it four decades using their own “history concept”. In the last years new applications were developed using Envers which “aims to provide an easy auditing / versioning solution for entity classes” (see <a href="https://hibernate.org/orm/envers/">here</a>) in combination with JPA. Personally I think that the Event Sourcing approach is very simple. There are no additional tables needed, just the event streams.</p>
+
+<p>There is also another business advantage of using events: Event Sourcing events belong to the domain. The relational database does not. Something like “the customer has moved” is relevant to the business. Something like “The street field in table ‘address’ was updated to ‘xy’” is not. Approaches like EventStorming are getting more popular lately (“a flexible workshop format for collaborative exploration of complex business domains” using events <a href="https://www.eventstorming.com/">see here</a>).</p>
+
+<p>A technical advantage is that you have events “for free”. Nowadays “Event Driven Architectures” are en vogue. Finally they became “main stream”. Many applications at my company now publish events in addition to saving their state to the database so that other applications can consume them. Also it seems simple to publish events, which is usually not that trivial in classic applications. One possibility is to send them via a message broker like <a href="https://kafka.apache.org/">Kafka</a>. But then you have two transactions: One writing the current state to the applications database one one writing the event(s) belonging to this state change to the message broker. This can either be solved by using distributed transactions (which nowadays is usually frowned upon) or you poll the database for changes and publish them. With Event Sourcing you only have to care about events. You just store the events and that’s it. Imagine in a “classic” application there is a bug and the state has been written correctly to the database but the events published were wrong. What do you do? It might be difficult to fix this situation and inform all the systems that have consumed your wrong events. With Event Sourcing the events might be wrong too. But then also the state of the system is wrong. It would be necessary to create correction events but I think this is simpler to achieve and more clear because the state of the system is always based on the same events that you publish. Just to be clear: I actually do not recommend to publish “Event Sourcing” events directly to other applications outside of your bounded context. But this is another topic.</p>
+
+<h1 id="some-notes-about-event-stores">Some Notes about Event Stores</h1>
+
+<p>After having read the Event Sourcing chapter of Vaughn Vernon’s <a href="https://www.goodreads.com/book/show/15756865-implementing-domain-driven-design">IDDD book</a> and <a href="https://cqrs.files.wordpress.com/2010/11/cqrs_documents.pdf">Greg Young’s papers on CQRS</a> it was clear to us that we needed an Event Store. Greg Young shows the following example for an Event Store interface:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">interface</span> <span class="nc">IEventStore</span> <span class="p">{</span>
+ <span class="k">void</span> <span class="nf">SaveChanges</span><span class="p">(</span><span class="n">Guid</span> <span class="n">AggregateId</span><span class="p">,</span> <span class="kt">int</span> <span class="n">OriginatingVersion</span><span class="p">,</span> <span class="n">IEnumerable</span><span class="p">&lt;</span><span class="n">Event</span><span class="p">&gt;</span> <span class="n">events</span><span class="p">);</span>
+ <span class="n">IEnumerable</span><span class="p">&lt;</span><span class="n">Event</span><span class="p">&gt;</span> <span class="nf">GetEventsFor</span><span class="p">(</span><span class="n">Guid</span> <span class="n">AggregateId</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>The naming implies Domain Driven Design (DDD) already. However it is not necessary to use DDD but it somehow fits very well. Instead of calling it <code class="highlighter-rouge">AggregateId</code> it could be called <code class="highlighter-rouge">EventStreamId</code> or similar. However for me the most notable thing is the <code class="highlighter-rouge">OriginatingVersion</code>. Greg Young explains, that this is used for optimistic locking. So when saving your aggregate (or stream) you specify the version you expect to be in the Event Store when appending your new version. If someone else has modified the aggregate in the meantime then the Event Store will throw an optimistic locking exception. This mechanism is important in order to ensure business rules or invariants.</p>
+
+<p>Imagine a bank account. It must only possible to withdraw money from the account if there is enough money. If there are 42 swiss francs on the account and two people try to withdraw these 42 francs at almost the same time then only one must succeed.</p>
+
+<p>I had quite some discussions with some people about this who argued that message driven systems should be designed so that they are more tolerant. Imagine a reservation system that might overbook seats (book a seat twice for example). There might be a process that sends a cancellation to the customer in the (hopefully) seldom case that this happens. This is of course possible and in some cases this might be the best way but it does not change the fact that sometimes you have “hard” business rules. In DDD this is one of the reasons to put such a logic inside an aggregate root.</p>
+
+<p>It is however important to distinguish between “technical locking” and “business locking”. The technical locking exists to ensure that there are not suddenly two different events with the same sequence number (for the same aggregate). Assume that there is a “Person” aggregate and two people are trying to modify the name concurrently. You could of course just use the technical optimistic locking. This would mean that the guy who presses the “save button” latest will get a concurrency exception. However there might be nicer solutions to this problem: One is to still accept his change without throwing an exception and override the first change. This would mean that the application has to re-read the events and set the <code class="highlighter-rouge">OriginatingVersion</code> accordingly in order to save the change. Another solution would be to check whether there is actually a difference between the two concurrent changes. Maybe both users are trying to set the same name for the person. So why bother the second user with a concurrency exception?</p>
+
+<p>The second approach we used for event sourcing does not have such an <code class="highlighter-rouge">OriginatingVersion</code> and still can ensure invariants.</p>
+
+<h2 id="technical-challenges">Technical challenges</h2>
+
+<p>Greg young writes:</p>
+
+<blockquote>
+  <p>Although not a trivial exercise to create a production quality Event Storage the overall concepts behind
+  an Event Storage are relatively easy</p>
+</blockquote>
+
+<p>When I read this the first time I thought why shouldn’t this be trivial? Well, one thing is proper locking and get the optimistic locking right. Often database specific stuff has to be taken into account for this. You have to understand isolation levels etc. The other thing is that you need to get a sequence number that properly increases 1 by 1.</p>
+
+<h1 id="approach-i-the-classic-approach">Approach I: The Classic Approach</h1>
+
+<p>The <a href="https://www.goodreads.com/book/show/15756865-implementing-domain-driven-design">IDDD book</a> describes what I call the “Classic Approach” with DDD. The classic approach with DDD works more or less like this:</p>
+
+<p><img src="/uml/00a13cd73d0c0b352629fe3236768401.svg" alt="PlantUML SVG diagram" class="plantuml" /></p>
+
+<ol>
+  <li>The user invokes the withdraw operation</li>
+  <li>The Application Service uses the Repository to load the Account</li>
+  <li>In order to load the account the Repository reads all past events of the given account from the EventStore as an event stream.</li>
+  <li>It then applies all these events to the Account in order to obtain the current state of the account.</li>
+  <li>Now the Application Service can invoke the withdraw-Method on the reconstituted account</li>
+  <li>The account emits a new event that states that money has been withdrawn</li>
+  <li>The Application Service tells the Repository to store the Account Object</li>
+  <li>The Repository stores the Account Object by appending the newly emitted events to the Event Store</li>
+</ol>
+
+<h1 id="approach-ii-the-reactive-approach">Approach II: The Reactive Approach</h1>
+
+<p>In the classic approach we make use of the Repository pattern in order to load and save Aggregates. The call to <code class="highlighter-rouge">withdraw()</code> is a synchronous and local method call. On each invocation of a business method the Aggregate is reconstituted by applying all past events (this can be accelerated by using snapshosts).</p>
+
+<p>In the Reactive Approach you cannot invoke methods directly on an Aggregate. You can only send messages to an actor which goes with the <a href="https://www.reactivemanifesto.org/">reactive manifesto</a> which states:</p>
+
+<blockquote>
+  <p>Reactive Systems rely on asynchronous message-passing to establish a boundary between components that ensures loose coupling, isolation and location transparency.</p>
+</blockquote>
+
+<p>In our system we implemented this approach using <a href="https://akka.io/">Akka</a> and <a href="https://doc.akka.io/docs/akka/current/persistence.html">Akka Persistence</a>. Akka is an implementation of the Actor Model which was first described in 1973 by Carl Hewitt. Akka is implemented in Scala but has a Java API. A similar implementation could probably achieved by using <a href="https://vlingo.io/">vlingo</a> which is another implementation of the Actor Model. At the time we looked at it Akka was more mature but certainly this could have changed in the meantime. Also the <a href="https://axoniq.io/">Axon Framework</a> does use the reactive approach. Note that Akka and Vlingo are generic frameworks for reactive applications while Axon is more specific.</p>
+
+<p>Instead of a Repository so called Command Handlers are used. A Command Handler receives a command and sends it to the aggregate.</p>
+
+<p><img src="/uml/469e3eabc0436e4a348fdda97a51518f.svg" alt="PlantUML SVG diagram" class="plantuml" /></p>
+
+<ol>
+  <li>The user invokes the withdraw operation</li>
+  <li>The Application Services uses the Command Gateway to send the command to the Actor</li>
+  <li>The Command Gateway sends a command message to the Actor (this may be a remote call)</li>
+  <li>The Actor receives the command</li>
+  <li>The Actor reads all past events for the given aggregate</li>
+  <li>The Actor applies them to the Aggregate</li>
+  <li>The Actor invokes the withdraw  operation</li>
+  <li>The withdraw Operation returns the event(s) that result from performing the withdrawal</li>
+  <li>The Actor stores the events in the event store</li>
+  <li>The Actor sends the response</li>
+</ol>
+
+<h1 id="some-notes-about-commands">Some notes about commands</h1>
+
+<p>Bertrand Meyer described the Command Query Segregation Pattern (CQS): “It states that every method should either be  command that performs an action, or a query that returns data to the caller, but not both” (see <a href="https://en.wikipedia.org/wiki/Command%E2%80%93query_separation">Wikipedia</a>).</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="c1">// mutates state but does not return anything</span>
+<span class="kd">public</span> <span class="kt">void</span> <span class="nf">command</span><span class="o">(</span><span class="kt">int</span> <span class="n">input</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">state</span> <span class="o">=</span> <span class="n">input</span><span class="o">;</span>
+<span class="o">}</span>
+
+<span class="c1">// returns a value but does not mutate state</span>
+<span class="kd">public</span> <span class="kt">int</span> <span class="nf">query</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="n">state</span><span class="o">;</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>In CQRS the application is split into a query/read and a command/write side which allows for better scaling and separation of concern. Usually reading is performed more often than writing. The read side can be optimized for reading and even be deployed independently of the write side.</p>
+
+<p>It may seem trivial but it’s important to note that a command in CQRS may fail or it might be rejected. Greg Young’s <a href="https://github.com/gregoryyoung/m-r/tree/master/SimpleCQRS">CQRS Example Application</a> does clearly show this:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">class</span> <span class="nc">InventoryItem</span> <span class="p">:</span> <span class="n">AggregateRoot</span> <span class="p">{</span>
+
+    <span class="c1">// ...</span>
+
+    <span class="k">public</span> <span class="k">void</span> <span class="nf">ChangeName</span><span class="p">(</span><span class="kt">string</span> <span class="n">newName</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="kt">string</span><span class="p">.</span><span class="nf">IsNullOrEmpty</span><span class="p">(</span><span class="n">newName</span><span class="p">))</span> <span class="k">throw</span> <span class="k">new</span> <span class="nf">ArgumentException</span><span class="p">(</span><span class="s">"newName"</span><span class="p">);</span>
+        <span class="nf">ApplyChange</span><span class="p">(</span><span class="k">new</span> <span class="nf">InventoryItemRenamed</span><span class="p">(</span><span class="n">_id</span><span class="p">,</span> <span class="n">newName</span><span class="p">));</span>
+    <span class="p">}</span>
+    
+    <span class="c1">// ...</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>The aggregate root simply throws an <code class="highlighter-rouge">ArgumentException</code> if <code class="highlighter-rouge">newName</code> is null. No event is persisted in this case.</p>
+
+<p>An event in contrast states a fact, something that happened. It is note possible to “reject” the event. If a user withdraws 10 CHF from his account which has a balance of 42 CHF then everything is fine. An event will be emitted that states that 10 CHF have been withdrawn.</p>
+
+<p><img src="/uml/d54f7b41af0939394c240783064a81b8.svg" alt="PlantUML SVG diagram" class="plantuml" /></p>
+
+<p>If the user tries to withdraw 50 CHF from his account that has a balance of 42 CHF then the command to do so will be rejected. There will not be an event stored in the Event Store. Of course the business might still decide that they want such attempts to be stored but usually this is nothing to be stored in an Event Store. It could be stored in a log file. In Microsoft’s <a href="http://cqrsjourney.github.io/">a CQRS Journey</a> there is an example involving a seat reservation: A user “registers to a conference” via an “Order” Aggregate. The Order Aggregate emitts an “OrderPlaced” Event which is then acted upon by the Process Manager which calls the “ConferenceSeatsAvailabilityAggregate” to make a seat reservation. If the reservation succeeds a “ReservationAccepted” Event is emitted. If it fails a “ResevationRejected” Event is emitted. I don’t really see why this is necessary. In a later stage they change the example to put the seats that could not be reserved to a waiting list. OK, that could be a reason but then this could also be done by the ProcessManager when he gets the outcome of the command. And then one could also argue that the outcome of a command is also a kind of event. This is a valid argument but I think it is not necessary to persist this kind of events.</p>
+
+<p><img src="/uml/6ab1aaaa3b99b638c0cb51ae3223efe4.svg" alt="PlantUML SVG diagram" class="plantuml" /></p>
+
+<p>A synchronous call directly returns the response although in case of a timeout it is not possible to know about the outcome.</p>
+
+<p>In case of asynchronous command execution It is necessary to have a means to get a response for a command. The caller might want to know the reason for the rejection in order to display it in a UI etc. This could be done by polling for the state of command execution. As in synchronous execution there will probably a timeout for polling the state. One solution is such cases is to execute the command again which could lead to problems if the system called is not idempotent (<a href="/blog/2019/09/Idempotence">see my post on Idempotence</a>)</p>
+
+<p><img src="/uml/516bf8336fe336b8ba044f3019345a16.svg" alt="PlantUML SVG diagram" class="plantuml" /></p>
+
+<p>A more elegant solution might be to use to user Server Sent Events etc. in order to avoid polling.</p>
+
+<h1 id="migration-to-an-event-sourced-application">Migration to an Event Sourced Application</h1>
+
+                </p>
+            </div>
+        </section>
+
+        
+
+
+<div id="disqus_thread"></div>
+<script>
+
+    var disqus_config = function () {
+        this.page.url = "http://idontbyte.jaun.org/blog/2020/01/eventsourcing-data-migration";  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = "/blog/2020/01/eventsourcing-data-migration"; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+    };
+    (function() { // DON'T EDIT BELOW THIS LINE
+        var d = document, s = d.createElement('script');
+        s.src = '//idontbyte-jaun-org.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+
+
+        
+
+<div class="footer">
+    <div class="pure-menu pure-menu-horizontal">
+        &copy; 2019, 2020 - Oliver Jaun
+        <ul>
+            <li class="pure-menu-item"><a href="/privacy_policy.html" class="pure-menu-link">Privacy Policy</a></li>
+            <li class="pure-menu-item"><a href="/disclosure_statement.html" class="pure-menu-link">Disclosure Statement</a></li>
+        </ul>
+    </div>
+</div>
+    </div>
+
+
+
+</div>
+
+
+</body>
+
+</html>

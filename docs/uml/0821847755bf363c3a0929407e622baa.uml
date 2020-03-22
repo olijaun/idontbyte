@@ -1,0 +1,14 @@
+@startuml
+
+
+package org.jaun.app.domain {
+  Object <|-- ArrayList
+}
+
+package net.sourceforge.plantuml {
+  Object <|-- Demo1
+  Demo1 *- Demo2
+}
+
+
+@enduml
