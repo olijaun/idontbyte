@@ -5,9 +5,13 @@ categories: [architecture, design, eventsourcing]
 comments: true
 ---
 
-This is the third part in a series about Event Sourcing. In the past year I was involved in the development of a Java application using Event Sourcing. Actually we did it twice using different approaches. In this post I'd like to share some thoughts about the design of these approaches.
+This is the third part in a series about Event Sourcing. In the past year I was involved in the development of a Java application using Event Sourcing. Actually we did it twice using different approaches. In this post I'd like to share some thoughts on different implementation approaches. See also my other post on Event Sourcing:
+
+{% include_relative event_sourcing_series.md %}
 
 This post assumes that you know what Event Sourcing is. If not then I recommend that you read [this Document from Greg Young](https://cqrs.files.wordpress.com/2010/11/cqrs_documents.pdf).
+
+
 
 # Introduction
 
@@ -34,7 +38,7 @@ U -> AS: **1** withdraw("X", 42)
 AS -> R: **2** getAccount("X")
 R -> ES: **3** loadEventStream("X")
 R <-- ES: events : List<Events>
-create "Account" as A
+create "<<Aggregate Root>>\nAccount" as A
 R ->  A: **4** create(events)
 A -> A: **5** apply(events)
 R <-- A
@@ -103,8 +107,8 @@ Instead of a Repository a Command Gateway is used. A Command Gateway receives a 
 actor "User" as U
 participant "Application Service" as AS
 participant "Command Gateway" as CG
-participant "Account Actor" as AC
-participant "Account" as A
+participant "<<Actor>>\nAccount" as AC
+participant "<<Aggregate Root>>\nAccount" as A
 participant "EventStore" as ES
 
 U -> AS: **1** withdraw("X", 42)
@@ -166,6 +170,8 @@ What's interesting is that this is actually shorter than the Classic Approach. N
 
 There is significant interest today in Reactive Systems and reactive Programming. I'm not qualified to make any statements about how they perform etc. At least from theoretical standpoint they may perform better -- at least in certain cases and depending on the definition of "performance". Messaging etc. are definitely an overhead when compared to direct method invocations. But as soon as you need scalability and high throughput the Reactive Approach gets more interesting. 
 
-From a programmers standpoint the classic approach looks probably more familiar. The main work was to implement the basic framework we build around Akka in order to achieve a Clean Architecture. For me it was difficult to get into the message driven and asynchronous thinking. Also testing of such systems is not simple and you have to get accustomed first. Now that we have this framework we can focus on business features. Also as you can see in the code snippet some thing even get simpler.
+From a programmers standpoint the classic approach looks probably more familiar and testing is simpler.
+
+In respect to the reactive appraoch the main work was to implement the basic framework we build around Akka in order to achieve a Clean Architecture. For me it was difficult to get into the message driven and asynchronous thinking. Also testing of such systems is not simple and you have to get accustomed first. Now that we have this framework we can focus on business features. Also as you can see in the code snippet some thing even get simpler.
 
 

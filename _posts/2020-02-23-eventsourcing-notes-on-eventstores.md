@@ -7,7 +7,7 @@ comments: true
 
 This is the first part in a series about Event Sourcing. In the past year I was involved in the development of a Java application using Event Sourcing. Actually we did it twice using different approaches. In this post I'd like to share some thoughts about Event Stores. See also my other post on Event Sourcing:
 
-- Part II: [Commands can be rejected]({% post_url 2020-02-26-eventsourcing-notes-on-commands %})
+{% include_relative event_sourcing_series.md %}
 
 This post assumes that you know what Event Sourcing is. If not then I recommend that you read [this Document from Greg Young](https://cqrs.files.wordpress.com/2010/11/cqrs_documents.pdf).
 
