@@ -1,3 +1,4 @@
 - Part I: [Notes on Event Stores]({% post_url 2020-02-23-eventsourcing-notes-on-eventstores %})
 - Part II: [Commands can be rejected]({% post_url 2020-02-26-eventsourcing-notes-on-commands %})
 - Part III: [Implementation Approaches]({% post_url 2020-03-22-eventsourcing-implementation-approaches %})
+- Part IV: [Thinking Differently]({% post_url 2020-05-24-eventsourcing-thinking-differently %})

@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A layout example that shows off a blog page with a list of posts.">
+    <title>Event Sourcing - Thinking Differently</title>
+    <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.1/build/pure-min.css" integrity="sha384-"
+          crossorigin="anonymous">
+
+    <!--[if lte IE 8]>
+    <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.1/build/grids-responsive-old-ie-min.css">
+    <![endif]-->
+    <!--[if gt IE 8]><!-->
+    <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.1/build/grids-responsive-min.css">
+    <!--<![endif]-->
+
+
+    <!--[if lte IE 8]>
+    <link rel="stylesheet" href="css/layouts/blog-old-ie.css">
+    <![endif]-->
+    <!--[if gt IE 8]><!-->
+    <link rel="stylesheet" href="/assets/blog.css">
+    <!--<![endif]-->
+
+    <link rel="me" href="https://twitter.com/oliverjaun" />
+    <link rel="me" href="https://github.com/olijaun" />
+    <link rel="me" href="mailto:oliver@jaun.org" />
+
+    <link rel="webmention" href="https://webmention.io/idontbyte.jaun.org/webmention" />
+    <link rel="pingback" href="https://webmention.io/idontbyte.jaun.org/xmlrpc" />
+
+    <script>
+        (function (i, s, o, g, r, a, m) {
+            i['GoogleAnalyticsObject'] = r;
+            i[r] = i[r] || function () {
+                (i[r].q = i[r].q || []).push(arguments)
+            }, i[r].l = 1 * new Date();
+            a = s.createElement(o),
+                m = s.getElementsByTagName(o)[0];
+            a.async = 1;
+            a.src = g;
+            m.parentNode.insertBefore(a, m)
+        })(window, document, 'script', 'https://www.google-analytics.com/analytics.js', 'ga');
+
+        ga('create', 'UA-50141806-2', 'auto');
+        ga('send', 'pageview');
+
+    </script>
+
+</head>
+
+
+<body>
+
+<div id="layout" class="pure-g">
+
+    <div class="sidebar pure-u-1 pure-u-md-1-4">
+    <div class="header">
+        <h1 class="brand-title">I don't byte</h1>
+        <h2 class="brand-tagline">Oliver Jaun's Blog On Software Development</h2>
+
+        <nav class="nav">
+            <ul class="nav-list">
+                <li class="nav-item">
+                    <a class="pure-button" href="/">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="pure-button" href="/about.html">About</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+    <div class="content pure-u-1 pure-u-md-3-4">
+        <!-- A single blog post -->
+        <section class="post">
+
+            <header class="post-header">
+
+                <h2 class="post-title">Event Sourcing - Thinking Differently</h2>
+
+                <p class="post-meta">
+                    By <a class="post-anchor" href="/about">Oliver Jaun</a>,
+                    
+                    <time datetime='2020-05-24'>May 24, 2020</time>
+                    
+
+                    
+
+
+                    
+                    <a class="post-category post-category-architecture" href="#">architecture</a>
+                    
+                    <a class="post-category post-category-design" href="#">design</a>
+                    
+                    <a class="post-category post-category-eventsourcing" href="#">eventsourcing</a>
+                    
+                </p>
+            </header>
+
+            <div class="post-description">
+                <p>
+                    <p>This is the fourth part in a series about Event Sourcing. In the past year I was involved in the development of a Java application using Event Sourcing. Actually we did it twice using two different approaches. In this post I’d like to share some thoughts about commands in the context of CQRS and Event Sourcing. See also my other post on Event Sourcing:</p>
+
+<ul>
+  <li>Part I: <a href="/blog/2020/02/eventsourcing-notes-on-eventstores">Notes on Event Stores</a></li>
+  <li>Part II: <a href="/blog/2020/02/eventsourcing-notes-on-commands">Commands can be rejected</a></li>
+  <li>Part III: <a href="/blog/2020/03/eventsourcing-implementation-approaches">Implementation Approaches</a></li>
+  <li>Part IV: <a href="/blog/2020/05/eventsourcing-thinking-differently">Thinking Differently</a></li>
+</ul>
+
+<p>This post assumes that you know what Event Sourcing is. If not then I recommend that you read <a href="https://cqrs.files.wordpress.com/2010/11/cqrs_documents.pdf">this Document from Greg Young</a>.</p>
+
+<h1 id="keep-read-and-write-model-separate-when-using-cqrs">Keep Read and Write Model separate when using CQRS</h1>
+
+<p>As I mentioned earlier: The basic definition of Event Sourcing is that you reconstitute the state of the application by replaying all past events. Event Sourcing does not necessarily mean that CQRS needs to be used although often it might be very useful. CQRS splits the application in two parts: the Read Model and the Write Model. This allows for better scaling and separation of concern. If CQRS is used it is important to really keep the two sides separate.</p>
+
+<p>You might ask: “so what, where’s the problem”? The problem is, that it might be necessary to rethink the application’s design in order to achieve this. Let’s look at an example.</p>
+
+<p>Assume a system that manages memberships. Each membership states the year and references a member. The RESTful service might look like this (Note that for the sake of simplicity I do not use <a href="https://en.wikipedia.org/wiki/HATEOAS">HATEOS</a> and other fancy stuff):</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>POST /memberships
+
+{
+    "year": 2020,
+    "memberId": "123"
+}
+</code></pre></div></div>
+
+<p>Creating and saving a membership could look as follows. Note that creating a <code class="highlighter-rouge">Membership</code> automatically generates an ID for us:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">class</span> <span class="nc">MembershipApplication</span> <span class="o">{</span>
+    <span class="kd">public</span> <span class="nc">MembershipId</span> <span class="nf">createMembership</span><span class="o">()</span> <span class="o">{</span>
+
+        <span class="nc">Membership</span> <span class="n">m</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Membership</span><span class="o">(</span><span class="n">memberId</span><span class="o">,</span> <span class="n">year</span><span class="o">);</span>
+        <span class="n">repository</span><span class="o">.</span><span class="na">save</span><span class="o">(</span><span class="n">m</span><span class="o">);</span>
+        <span class="k">return</span> <span class="n">m</span><span class="o">.</span><span class="na">getId</span><span class="o">();</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>Now the business defines a business rule which states that there can only be one membership per member and year. In a “normal” DDD application one could do the following:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">class</span> <span class="nc">MembershipApplication</span> <span class="o">{</span>
+    <span class="kd">public</span> <span class="nc">MembershipId</span> <span class="nf">createMembership</span><span class="o">(</span><span class="nc">MemberId</span> <span class="n">memberId</span><span class="o">,</span> <span class="kt">int</span> <span class="n">year</span><span class="o">)</span> <span class="kd">throws</span> <span class="nc">AlreadyMemberForGivenYear</span>  <span class="o">{</span>
+
+        <span class="nc">Collection</span><span class="o">&lt;</span><span class="nc">Membership</span><span class="o">&gt;</span> <span class="n">memberships</span> <span class="o">=</span> <span class="n">repository</span><span class="o">.</span><span class="na">find</span><span class="o">(</span><span class="n">memberId</span><span class="o">,</span> <span class="n">year</span><span class="o">);</span>
+
+        <span class="k">if</span><span class="o">(!</span><span class="n">memberships</span><span class="o">.</span><span class="na">isEmpty</span><span class="o">())</span> <span class="o">{</span>
+            <span class="k">throw</span> <span class="k">new</span> <span class="nf">AlreadyMemberForGivenYear</span><span class="o">();</span>
+        <span class="o">}</span>
+
+        <span class="nc">Membership</span> <span class="n">m</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Membership</span><span class="o">(</span><span class="n">memberId</span><span class="o">,</span> <span class="n">year</span><span class="o">);</span>
+        <span class="n">repository</span><span class="o">.</span><span class="na">save</span><span class="o">(</span><span class="n">m</span><span class="o">);</span>
+        <span class="k">return</span> <span class="n">m</span><span class="o">.</span><span class="na">getId</span><span class="o">();</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>Well ok, this check would probably belong in a domain service and not an application service. But that is not the point. Also to actually guarantee that there won’t be two memberships for the same member and year this would not be sufficient in a classic DDD application neither. In a concurrency situation the <code class="highlighter-rouge">isEmpty()</code> could be OK but then another thread saves the membership just after the check. This could be fixed with a unique constraint on the database. But then we are actually implementing a business rule in the infrastructure.</p>
+
+<p>When using CQRS the problem becomes even more obvious: You cannot make a unique constraint on an Event Store for this check. Sure, there are usually some unique constraints in an Event Store. E.g. the event ID or the sequence numbers. But they are not specific for a business requirement. Also in CQRS you have to assume that the store will be up-to-date probably hours after an aggregate has been modified. Other reasons to use CQRS are scalability and availability. By using the read model each time a new membership gets created there is load generated on the Read Model. Further the Write Model’s performance and availability depends on the Read Model which is not desirable.</p>
+
+<p>One solution is using a <code class="highlighter-rouge">MembershipId</code> that combines <code class="highlighter-rouge">memberId</code> and <code class="highlighter-rouge">year</code>:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">class</span> <span class="nc">MembershipId</span> <span class="o">{</span>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="nc">MemberId</span> <span class="n">memberId</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">year</span><span class="o">;</span>
+    <span class="c1">// ...</span>
+    <span class="kd">public</span> <span class="nc">String</span> <span class="nf">toString</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">memberId</span><span class="o">.</span><span class="na">toString</span><span class="o">()</span> <span class="o">+</span> <span class="s">"-"</span> <span class="o">+</span> <span class="n">year</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>So the <code class="highlighter-rouge">MembershipId</code> used to store the aggregate might be <code class="highlighter-rouge">123-2020</code>. In order to check if a membership for the given member exists one can just try to load it:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">class</span> <span class="nc">MembershipApplication</span> <span class="o">{</span>
+    <span class="kd">public</span> <span class="nc">MembershipId</span> <span class="nf">createMembership</span><span class="o">(</span><span class="nc">MemberId</span> <span class="n">memberId</span><span class="o">,</span> <span class="kt">int</span> <span class="n">year</span><span class="o">)</span> <span class="kd">throws</span> <span class="nc">AlreadyMemberForGivenYear</span>  <span class="o">{</span>
+
+        <span class="nc">Membership</span> <span class="n">m</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Membership</span><span class="o">(</span><span class="n">memberId</span><span class="o">,</span> <span class="n">year</span><span class="o">);</span>
+        <span class="nc">Membership</span> <span class="n">memberships</span> <span class="o">=</span> <span class="n">repository</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">membership</span><span class="o">.</span><span class="na">getId</span><span class="o">());</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">memberships</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">throw</span> <span class="k">new</span> <span class="nf">AlreadyMemberForGivenYear</span><span class="o">();</span>
+        <span class="o">}</span>
+        <span class="n">repository</span><span class="o">.</span><span class="na">save</span><span class="o">(</span><span class="n">m</span><span class="o">);</span>
+        <span class="k">return</span> <span class="n">m</span><span class="o">.</span><span class="na">getId</span><span class="o">();</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>It would be necessary to think about <code class="highlighter-rouge">save()</code> and how it behaves if there exists an aggregate with this ID already. One option would be to make two different methods like <code class="highlighter-rouge">create()</code> and <code class="highlighter-rouge">update()</code>. <code class="highlighter-rouge">create()</code> would throw an exception if an aggregate with the given ID already exists.</p>
+
+<p>There is another disadvantage of using such a combined key: If the business suddenly decides that there may now be multiple memberships for the same member and year then what? This would mean that we have to change the key of all our <code class="highlighter-rouge">Membership</code> aggregates.</p>
+
+<h1 id="thinking-differently">Thinking differently</h1>
+
+<p>I’m not saying the problem here applies only to Event Sourced applications with CQRS. However I think the fact that it is not possible to randomly search the database forces you to think differently and “harder” because you simply cannot do some dirty hacks. This will eventually lead to a better solution as I will explain now:</p>
+
+<p>In the Membership Example a new aggregate could be added: <code class="highlighter-rouge">Member</code>. This allows to do the following:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">class</span> <span class="nc">MembershipApplication</span> <span class="o">{</span>
+    <span class="kd">public</span> <span class="nc">MembershipId</span> <span class="nf">createMembership</span><span class="o">(</span><span class="nc">MemberId</span> <span class="n">memberId</span><span class="o">,</span> <span class="kt">int</span> <span class="n">year</span><span class="o">)</span> <span class="kd">throws</span> <span class="nc">AlreadyMemberForGivenYear</span>  <span class="o">{</span>
+
+        <span class="nc">Member</span> <span class="n">member</span> <span class="o">=</span> <span class="n">memberRepository</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">memberId</span><span class="o">);</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">member</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">member</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Member</span><span class="o">(</span><span class="n">memberId</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="nc">Membership</span> <span class="n">membership</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Membership</span><span class="o">();</span>
+        <span class="n">member</span><span class="o">.</span><span class="na">addMembership</span><span class="o">(</span><span class="n">membership</span><span class="o">);</span> <span class="c1">// may throw AlreadyMemberForGivenYear</span>
+        <span class="n">memberRepository</span><span class="o">.</span><span class="na">save</span><span class="o">(</span><span class="n">member</span><span class="o">);</span>
+        <span class="k">return</span> <span class="n">membership</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>I think this is much better. The business rule can now be fully implemented in the domain. We do not need a combined key that must be changed if the business rule changes in the future.</p>
+
+<p>There is however something to be aware of in the example: I made <code class="highlighter-rouge">Membership</code> an entity of the <code class="highlighter-rouge">Member</code> aggregate. When a client creates a new Membership by posting to <code class="highlighter-rouge">/memberships</code> we want to return the ID of the newly created membership in order to access it afterwards by using GET on <code class="highlighter-rouge">/memberships/{membershipId}</code>.</p>
+
+<p>It would be possible to still return a combined key in the RESTfull service. So we could return again something like <code class="highlighter-rouge">123-2020</code>. Using this key it is possible to extract the member’s ID, load the <code class="highlighter-rouge">Member</code> aggregate and then locate the membership using the year in order to update then the membership. However image again that the business rule changes, and it is now possible to have multiple memberships for the same member and year. The ID would change. Any system that is holding a reference to the membership (for example the accounting system) will break.</p>
+
+<p>this can fixed by generating something like a UUID for each membership. When posting to <code class="highlighter-rouge">/memberships</code> the service would return for example <code class="highlighter-rouge">e06d8423-f90c-4c59-839e-e71ade68f37f</code>. Reading is not a problem, because the Read Model can contain this ID and it is possible to simply look it up. But now there is a problem when updating a membership: Updating is a write operation so it is only allowed to use the Write Model. But how can we access the <code class="highlighter-rouge">Membership</code> if we don’t know the Member’s ID?</p>
+
+<p>A simple solution is to still use a combined ID but this time a combination of the <code class="highlighter-rouge">MemberId</code> and the generated <code class="highlighter-rouge">MembershipId</code>. E.g. <code class="highlighter-rouge">123@e06d8423-f90c-4c59-839e-e71ade68f37f</code> (I’m using ‘@’ here as a separator because the UUID already contains dashes). This ID is stable and allows to change the business rules for adding Memberships without affecting the <code class="highlighter-rouge">MembershipId</code></p>
+
+<p>If you’re company insists in using a specific format for IDs then you would have to do some kind of translation from your combined ID to one that satisfies your companies rules.</p>
+
+<h1 id="towards-self-contained-systems">Towards Self Contained Systems</h1>
+
+<p>A Self Contained System (SCS) has the following characteristics (among others, see <a href="https://scs-architecture.org/">here</a>);</p>
+
+<ul>
+  <li>Each SCS is an autonomous web application. […]</li>
+  <li>Communication with other SCSs or 3rd party systems is asynchronous wherever possible. […]</li>
+</ul>
+
+<p>Let’s look again at our membership service:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="kd">public</span> <span class="kd">class</span> <span class="nc">MembershipApplication</span> <span class="o">{</span>
+     <span class="kd">public</span> <span class="nc">MembershipId</span> <span class="nf">createMembership</span><span class="o">(</span><span class="nc">MemberId</span> <span class="n">memberId</span><span class="o">,</span> <span class="kt">int</span> <span class="n">year</span><span class="o">)</span> <span class="kd">throws</span> <span class="nc">AlreadyMemberForGivenYear</span>  <span class="o">{</span>
+ 
+         <span class="nc">Member</span> <span class="n">member</span> <span class="o">=</span> <span class="n">memberRepository</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">memberId</span><span class="o">);</span>
+         <span class="k">if</span><span class="o">(</span><span class="n">member</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+             <span class="n">member</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Member</span><span class="o">(</span><span class="n">memberId</span><span class="o">);</span>
+         <span class="o">}</span>
+         <span class="nc">MembershipId</span> <span class="n">membershipId</span> <span class="o">=</span> <span class="n">member</span><span class="o">.</span><span class="na">addMembership</span><span class="o">(</span><span class="n">memberId</span><span class="o">,</span> <span class="n">year</span><span class="o">);</span> <span class="c1">// may throw AlreadyMemberForGivenYear</span>
+         <span class="n">memberRepository</span><span class="o">.</span><span class="na">save</span><span class="o">(</span><span class="n">member</span><span class="o">);</span>
+         <span class="k">return</span> <span class="n">membershipId</span><span class="o">;</span>
+     <span class="o">}</span>
+ <span class="o">}</span>
+</code></pre></div></div>
+<p>The service first checks if a Member with the given ID exists. If not, it creates a new one. This is one possibility. The problem is that a client might provide a non-existent memberId. The service could check whether the Member actually exists by calling the member system using a RESTfull service. The example uses the <code class="highlighter-rouge">MemberPort</code> for this (I use the term port here to emphasize the Ports and Adapter Architecture, aka Hexagonal).</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="kd">public</span> <span class="kd">class</span> <span class="nc">MembershipApplication</span> <span class="o">{</span>
+     <span class="kd">public</span> <span class="nc">MembershipId</span> <span class="nf">createMembership</span><span class="o">(</span><span class="nc">MemberId</span> <span class="n">memberId</span><span class="o">,</span> <span class="kt">int</span> <span class="n">year</span><span class="o">)</span> <span class="kd">throws</span> <span class="nc">AlreadyMemberForGivenYear</span><span class="o">,</span> <span class="nc">MemberNotFoundException</span>  <span class="o">{</span>
+ 
+         <span class="nc">Member</span> <span class="n">member</span> <span class="o">=</span> <span class="n">memberRepository</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">memberId</span><span class="o">);</span>
+         <span class="k">if</span><span class="o">(</span><span class="n">member</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+             <span class="k">if</span><span class="o">(</span><span class="n">memberPort</span><span class="o">.</span><span class="na">memberExists</span><span class="o">(</span><span class="n">memberId</span><span class="o">))</span> <span class="o">{</span>
+                 <span class="n">member</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Member</span><span class="o">(</span><span class="n">memberId</span><span class="o">);</span>
+             <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+                 <span class="k">throw</span> <span class="k">new</span> <span class="nf">MemberNotFoundException</span><span class="o">();</span>
+             <span class="o">}</span>
+         <span class="o">}</span>
+         <span class="nc">MembershipId</span> <span class="n">membershipId</span> <span class="o">=</span> <span class="n">member</span><span class="o">.</span><span class="na">addMembership</span><span class="o">(</span><span class="n">memberId</span><span class="o">,</span> <span class="n">year</span><span class="o">);</span> <span class="c1">// may throw AlreadyMemberForGivenYear</span>
+         <span class="n">memberRepository</span><span class="o">.</span><span class="na">save</span><span class="o">(</span><span class="n">member</span><span class="o">);</span>
+         <span class="k">return</span> <span class="n">membershipId</span><span class="o">;</span>
+     <span class="o">}</span>
+ <span class="o">}</span>
+</code></pre></div></div>
+<p>This only replicates the member if it exists. This is fine, but it is not really self contained. We should communicate asynchronously with other systems. So the solution would be to subscribe to member events and replicate members when receiving events. This way the system is very independent, and it is possible to add memberships event if the member system itself is not available.</p>
+
+<p>Here’s a sketch of how this could look like:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="kd">public</span> <span class="kd">class</span> <span class="nc">MembershipApplication</span> <span class="o">{</span>
+
+     <span class="kd">public</span> <span class="nc">MembershipId</span> <span class="nf">createMembership</span><span class="o">(</span><span class="nc">MemberId</span> <span class="n">memberId</span><span class="o">,</span> <span class="kt">int</span> <span class="n">year</span><span class="o">)</span> <span class="kd">throws</span> <span class="nc">AlreadyMemberForGivenYear</span><span class="o">,</span> <span class="nc">MemberNotFoundException</span>  <span class="o">{</span>
+ 
+         <span class="nc">Member</span> <span class="n">member</span> <span class="o">=</span> <span class="n">memberRepository</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">memberId</span><span class="o">);</span>
+         <span class="k">if</span><span class="o">(</span><span class="n">member</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+             <span class="k">throw</span> <span class="k">new</span> <span class="nf">MemberNotFoundException</span><span class="o">();</span>
+         <span class="o">}</span>
+         <span class="nc">MembershipId</span> <span class="n">membershipId</span> <span class="o">=</span> <span class="n">member</span><span class="o">.</span><span class="na">addMembership</span><span class="o">(</span><span class="n">memberId</span><span class="o">,</span> <span class="n">year</span><span class="o">);</span> <span class="c1">// may throw AlreadyMemberForGivenYear</span>
+         <span class="n">memberRepository</span><span class="o">.</span><span class="na">save</span><span class="o">(</span><span class="n">member</span><span class="o">);</span>
+         <span class="k">return</span> <span class="n">membershipId</span><span class="o">;</span>
+     <span class="o">}</span>
+     
+     <span class="c1">// handle events from member system and keep members up-to-date</span>
+     <span class="kd">private</span> <span class="nf">onEvent</span><span class="o">(</span><span class="nc">MemberEvent</span> <span class="n">memberEvent</span><span class="o">)</span> <span class="o">{</span>
+         <span class="c1">// [...]</span>
+         <span class="n">memberRepository</span><span class="o">.</span><span class="na">save</span><span class="o">(</span><span class="n">member</span><span class="o">);</span>
+     <span class="o">}</span>
+ <span class="o">}</span>
+</code></pre></div></div>
+
+<p>How you process exactly the member events depends of course on your messaging system and framework. This is just a sketch. It is however important to note that updating the members is done in the Write Side of your application. It is not to be confused with the event processing that it probably going on elsewhere in this application in order to update the Read Model.</p>
+
+<h1 id="summary">Summary</h1>
+
+<p>When implementing an event-sourced application with CQRS for the first time the fact that you must not access the Read Model when writing may be unfamiliar. However I think it will lead to a better design in respect to DDD eventually. This is of course my personal and highly subjective opinion.</p>
+
+                </p>
+            </div>
+        </section>
+
+        
+
+
+<div id="disqus_thread"></div>
+<script>
+
+    var disqus_config = function () {
+        this.page.url = "http://idontbyte.jaun.org/blog/2020/05/eventsourcing-thinking-differently";  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = "/blog/2020/05/eventsourcing-thinking-differently"; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+    };
+    (function() { // DON'T EDIT BELOW THIS LINE
+        var d = document, s = d.createElement('script');
+        s.src = '//idontbyte-jaun-org.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+
+
+        
+
+<div class="footer">
+    <div class="pure-menu pure-menu-horizontal">
+        &copy; 2019, 2020 - Oliver Jaun
+        <ul>
+            <li class="pure-menu-item"><a href="/privacy_policy.html" class="pure-menu-link">Privacy Policy</a></li>
+            <li class="pure-menu-item"><a href="/disclosure_statement.html" class="pure-menu-link">Disclosure Statement</a></li>
+        </ul>
+    </div>
+</div>
+    </div>
+
+
+
+</div>
+
+
+</body>
+
+</html>

@@ -68,7 +68,7 @@ Clean Architecture means that frameworks like Spring, JPA, etc. are a detail. Yo
 
 In respect to Event Sourcing this means that you don't want a dependency on the framework you're using for Event Sourcing from your domain model.
 
-Let's have a look at [Axon](https://axoniq.io/) for example. Axon provides a framework for eventsources applications. Here's an example aggregate (taken from [their web page](https://docs.axoniq.io/reference-guide/implementing-domain-logic/command-handling/aggregate)): 
+Let's have a look at [Axon](https://axoniq.io/) for example. Axon provides a framework for eventsourced applications. Here's an example aggregate (taken from [their web page](https://docs.axoniq.io/reference-guide/implementing-domain-logic/command-handling/aggregate)): 
 
 
 ```java
@@ -102,3 +102,52 @@ public class GiftCard {
 ```
 
 As you can see this depends on Axon Annotations in order to work. The aggregate is part of the domain model. It should not depend on a framework. The framework should be a detail. It should be possible to replace Axon with something else without touching the domain model.
+
+We have used [Akka](https://akka.io) for Event Sourcing as I mentioned in previous articles. Is Akka better than the Axon Framework regarding Clean Architecture? That's probably not the point. The Axon Framework has a specific way to implement an Event Sourced application. It's probably more suitable to compare Axon with [Lagom](https://www.lagomframework.com/) (which is based on Akka). So akka-persistence is more low-level than Axon or Lagom and it's probably simpler to adapt it to your needs and keep the domain clean.
+
+However even with frameworks like Axon it would be possible to achieve a Clean Architecture. Let's refactor the Axon example from above:
+
+```java
+package org.giftcard.infrastructure;
+
+import org.giftcard.domain.GiftCard;
+
+import org.axonframework.commandhandling.CommandHandler;
+import org.axonframework.eventsourcing.EventSourcingHandler;
+import org.axonframework.modelling.command.AggregateIdentifier;
+
+import static org.axonframework.modelling.command.AggregateLifecycle.apply;
+
+public class AxonGiftCard {
+
+    private GiftCard giftCard;
+
+    @AggregateIdentifier // 1.
+    private String id;
+
+    @CommandHandler // 2.
+    public AxonGiftCard(IssueCardCommand cmd) {
+        // 3.
+        giftCard = new GiftCard(cmd);
+        List<Event> events = giftCard.getEmittedEvents();
+        events.forEach(event -> 
+            apply(new CardIssuedEvent(cmd.getCardId(), cmd.getAmount())));
+        events.clearEmittedEvents();
+    }
+
+    @EventSourcingHandler // 4.
+    public void on(CardIssuedEvent evt) {
+        id = evt.getCardId();
+        giftCard.on(evt);
+    }
+
+    // 5.
+    protected GiftCard() {
+    }
+    // omitted command handlers and event sourcing handlers
+}
+```
+
+Don't get me wrong. I'm not saying that this is a great solution. But it shows how you can move the framework into the infrastructure (note the package declaration I've added). So I renamed the class to `AxonGiftCard` and I'm basically delegating everything to the newly created `GiftCard` which is a framework independent Aggregate Root (residing in the package `org.giftcard.domain`). Due to the fact that I have never used Axon I'm not sure what to do with the id. I assume it is required, so I have the id in `AxonGiftCard` and `GiftCard`.
+
+The problem with this refactoring is that it basically renders everything useless that Axon proponents probably like about Axon. So if you insist in a clean architecture then Axon is probably getting in the way too much.
